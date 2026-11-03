@@ -1490,12 +1490,12 @@ svg text.cell{fill:#fff;font-size:11px;font-weight:600;pointer-events:none}
 
   /* lista e ficha */
   var _ess=essTag;essTag=function(f){return(f.origem=='autocadastro'&&!f.conferido?TG(['Autocadastro · conferir','warn'])+' ':'')+_ess(f)};
-  var _fun=fun;fun=function(){var h=_fun();if(!PEOK())return h;return h.replace('data-a="go" data-p="funf">Novo funcionário</button>','data-a="go" data-p="funf">Novo funcionário</button><button class="b2" data-a="go" data-p="conv">Link de cadastro p/ funcionário</button><button class="b2" data-a="hkxml" data-p="all">SAR2G · XML (não desligados)</button><button class="b2" data-a="hkxls" data-p="all">SAR2G · Excel (não desligados)</button>')};
+  var _fun=fun;fun=function(){var h=_fun();if(!PEOK())return h;return h.replace('data-a="go" data-p="funf">Novo funcionário</button>','data-a="go" data-p="funf">Novo funcionário</button><button class="b2" data-a="go" data-p="conv">Link de cadastro p/ funcionário</button><button class="b2" data-a="hkxml" data-p="all">HK · XML S-2200 (um por funcionário)</button><button class="b2" data-a="hkxls" data-p="all">SAR2G · Excel (não desligados)</button>')};
   var _fund=fund;fund=function(){var h=_fund();if(!PEOK())return h;var f=FN0.find(function(x){return x.id==sel});if(!f)return h;checarCert();
     if(f.fotoPath)h=h.replace('<h2>','<img data-foto="'+E(f.fotoPath)+'" alt="" style="width:84px;height:84px;border-radius:50%;object-fit:cover;border:2px solid #c9a24a;float:right"><h2>');
     var av='';if(f.origem=='autocadastro'&&!f.conferido)av+='<div class="al warn">Cadastro enviado pelo próprio funcionário'+(f.recebidoEm?' em '+new Date(f.recebidoEm).toLocaleDateString('pt-BR'):'')+'. Confira os dados, lance o custo do mês e decida se envia ao eSocial. <button class="b2" data-a="fconf">Marcar como conferido</button></div>';
     if(CERT&&CERT.ok===false)av+='<div class="al bad">O servidor não está pronto para o eSocial: '+E(CERT.erro||'')+' O envio fica bloqueado até configurar o certificado; "Baixar XML" continua funcionando (sem assinatura).</div>';
-    h=h.replace('Baixar XML (S-2200)</button></div>','Baixar XML (S-2200)</button><button class="b2" data-a="hkxml" data-p="'+f.id+'">XML SAR2G</button><button class="b2" data-a="hkxls" data-p="'+f.id+'">Excel SAR2G</button></div>');
+    h=h.replace('Baixar XML (S-2200)</button></div>','Baixar XML (S-2200)</button><button class="b2" data-a="hkxml" data-p="'+f.id+'">XML p/ HK (S-2200)</button><button class="b2" data-a="hkxls" data-p="'+f.id+'">Excel SAR2G</button></div>');
     return av?h.replace('<h3>Custo mensal do funcionário</h3>','<div class="alerts">'+av+'</div><h3>Custo mensal do funcionário</h3>'):h};
 
   /* gerar link de cadastro */
@@ -1518,7 +1518,10 @@ svg text.cell{fill:#fff;font-size:11px;font-weight:600;pointer-events:none}
 
   /* exportações SAR2G */
   function listaHk(p){return p=='all'?FN0.filter(function(f){return(!emp||f.emp==emp)&&!f.dtDesl}):FN0.filter(function(f){return f.id==p})}
-  function hkXmlBaixar(p){var l=listaHk(p);if(!l.length)return CC.toast('Nenhum funcionário para exportar.','danger');baixar('SAR2G-funcionarios-'+iso(new Date())+'.xml',new Blob([hkXml(l)],{type:'application/xml'}));CC.toast(l.length+' funcionário(s) no XML do SAR2G.','success')}
+  async function hkXmlBaixar(p){var l=listaHk(p);if(!l.length)return CC.toast('Nenhum funcionário para exportar.','danger');if(!srvBase())return CC.toast(SEMSRV,'danger');
+    try{for(var i=0;i<l.length;i++){var j=await srv('/esocial/admissao',{func:l[i],hk:true,seq:i+1});if(!j.ok){CC.toast('Falha: '+(j.erros||[j.erro]).slice(0,2).join(' | '),'danger');return}
+      baixar('S-2200-HK-'+dg(l[i].cpf)+'.xml',new Blob([j.xml],{type:'application/xml'}));await new Promise(function(r){setTimeout(r,400)})}
+      CC.toast(l.length+' arquivo(s) XML no layout S-2200 para o HK.','success')}catch(e){console.error(e);CC.toast('Falha ao falar com o servidor.','danger')}}
   function carregarXlsx(){return window.XLSX?Promise.resolve():new Promise(function(ok,fail){var s=document.createElement('script');s.src='https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';s.onload=ok;s.onerror=fail;document.head.appendChild(s)})}
   function hkXlsBaixar(p){var l=listaHk(p);if(!l.length)return CC.toast('Nenhum funcionário para exportar.','danger');
     carregarXlsx().then(function(){var rows=[SARC.map(function(c){return c[0]})].concat(l.map(function(f,i){return SARC.map(function(c){var v=c[2](f,i);if(c[3]=='d')return v?new Date(v+'T00:00:00'):'';return v==null?'':v})})),ws=XLSX.utils.aoa_to_sheet(rows,{cellDates:true});

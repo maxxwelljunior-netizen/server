@@ -91,8 +91,32 @@ function criar(ctx) {
     : { sig: 'http://www.w3.org/2001/04/xmldsig-more#rsa-sha256', dig: 'http://www.w3.org/2001/04/xmlenc#sha256', node: 'RSA-SHA256', h: 'sha256' };
   const ambiente = () => (PRODUCAO ? 'produção' : 'teste (produção restrita)');
 
+  /* Só na exportação para o SAR2G/HK: documentos no lugar oficial do S-2200 */
+  function docsHK(d, hk) {
+    if (!hk) return '';
+    const x = (d.ctps && d.ctpsSerie && d.ctpsUf ? '<CTPS>' + tag('nrCtps', d.ctps) + tag('serieCtps', d.ctpsSerie) + tag('ufCtps', String(d.ctpsUf).toUpperCase()) + '</CTPS>' : '') +
+      (d.rg && d.rgOrg ? '<RG>' + tag('nrDoc', d.rg) + tag('orgaoEmissor', d.rgOrg) + tag('dtExped', d.rgEmi) + '</RG>' : '');
+    return x ? '<documentos>' + x + '</documentos>' : '';
+  }
+  /* Dados que o S-2200 não tem (a planilha do HK pede): vão num bloco ao lado do evento, dentro de <eSocial> */
+  function extrasHK(d) {
+    const g = (n, c) => { const s = c.join(''); return s ? '<' + n + '>' + s + '</' + n + '>' : ''; };
+    return '<infoComplementarSAR2G>' + tag('apelido', d.apelido) + tag('empresa', d.empSar || d.emp) + tag('convencao', d.convencao) +
+      tag('motivoAdmissao', 'ADMISSÃO') + tag('inicioCargo', d.dtAdm) + tag('primeiraExperiencia', d.exp1 || d.dtAdm) + tag('segundaExperiencia', d.exp2 || d.dtAdm) +
+      tag('cidadeNascimento', d.cidNasc) + tag('conjuge', d.conjuge) + tag('primeiroEmprego', Number(d.primeiroEmprego) ? 1 : 0) + tag('estrangeiro', Number(d.estrangeiro) ? 1 : 0) +
+      g('pis', [tag('numero', dig(d.nis)), tag('serie', d.pisSerie), tag('dtEmissao', d.pisEmi)]) +
+      g('rg', [tag('uf', d.rgUf)]) +
+      g('tituloEleitor', [tag('numero', d.titulo), tag('zona', d.tituloZona), tag('secao', d.tituloSecao), tag('dtEmissao', d.tituloEmi)]) +
+      g('reservista', [tag('numero', d.reservista), tag('tipo', d.reservistaTipo)]) +
+      g('habilitacao', [tag('numero', d.cnh), tag('tipo', d.cnhTipo), tag('vencimento', d.cnhVenc)]) +
+      g('rne', [tag('numero', d.rne), tag('chegada', d.rneChegada), tag('validade', d.rneValidade), tag('visto', d.rneVisto)]) +
+      g('moradia', [tag('referencia', d.referencia), tag('zona', d.zonaMoradia)]) +
+      g('contaBancaria', [tag('tipo', d.tipoConta), tag('banco', d.banco), tag('agencia', d.agencia), tag('digitoAgencia', d.agenciaDig), tag('conta', d.conta), tag('digitoConta', d.contaDig)]) +
+      '</infoComplementarSAR2G>';
+  }
+
   /* S-2200 sem assinatura */
-  function montarS2200(d, seq) {
+  function montarS2200(d, seq, hk) {
     const cnpj = dig(E.EMITENTE_CNPJ, 14);
     const ts = new Date(Date.now() - 3 * 3600e3).toISOString().replace(/\D/g, '').slice(0, 14);
     const id = 'ID1' + cnpj + ts + dig(seq || 1, 5).slice(-5);
@@ -102,7 +126,7 @@ function criar(ctx) {
     const br = String(d.paisNasc || '105') === '105';
     const trab = '<trabalhador>' + tag('cpfTrab', dig(d.cpf, 11)) + tag('nmTrab', d.nome) + tag('sexo', d.sexo) + tag('racaCor', d.raca) + tag('estCiv', d.estCiv) + tag('grauInstr', d.grauInstr) +
       '<nascimento>' + tag('dtNascto', d.dtNasc) + (br ? tag('codMunic', dig(d.munNasc, 7)) + tag('uf', String(d.ufNasc || '').toUpperCase()) : '') +
-      tag('paisNascto', dig(d.paisNasc || '105')) + tag('paisNac', dig(d.paisNac || d.paisNasc || '105')) + tag('nmMae', d.mae) + '</nascimento>' +
+      tag('paisNascto', dig(d.paisNasc || '105')) + tag('paisNac', dig(d.paisNac || d.paisNasc || '105')) + tag('nmMae', d.mae) + (hk ? tag('nmPai', d.pai) : '') + '</nascimento>' + docsHK(d, hk) +
       '<endereco>' + brasil + '</endereco>' + contato + '</trabalhador>';
     const celetista = '<infoCeletista>' + tag('dtAdm', d.dtAdm) + tag('tpAdmissao', '1') + tag('indAdmissao', '1') + tag('tpRegJor', '1') + tag('natAtividade', '1') +
       tag('dtBase', d.dtBase ? String(parseInt(d.dtBase, 10)) : '') + tag('cnpjSindCategProf', dig(d.cnpjSind, 14)) + '</infoCeletista>';
@@ -116,7 +140,7 @@ function criar(ctx) {
       '<infoRegimeTrab>' + celetista + '</infoRegimeTrab>' + contrato + '</vinculo>';
     const evt = '<evtAdmissao Id="' + id + '"><ideEvento>' + tag('indRetif', '1') + tag('tpAmb', TP_AMB) + tag('procEmi', '1') + tag('verProc', 'AXIS-1.0') + '</ideEvento>' +
       '<ideEmpregador>' + tag('tpInsc', '1') + tag('nrInsc', cnpj) + '</ideEmpregador>' + trab + vinculo + '</evtAdmissao>';
-    return { id: id, evt: evt };
+    return { id: id, evt: evt, extra: hk ? extrasHK(d) : '' };
   }
 
   /* XMLDSig enveloped, C14N 1.0 — a assinatura fica ao lado do evtAdmissao, dentro de <eSocial> */
@@ -186,15 +210,17 @@ function criar(ctx) {
   }
 
   /* Gera (e, se houver certificado, assina) o S-2200 de um funcionário */
-  function gerar(d, seq) {
-    const dps = montarS2200(d, seq);
-    let xml = '<eSocial xmlns="' + NS_EVT + '">' + dps.evt + '</eSocial>', assinado = false, erroCert = '';
+  function gerar(d, seq, hk) {
+    const dps = montarS2200(d, seq, hk);
+    let xml = '<eSocial xmlns="' + NS_EVT + '">' + dps.evt + dps.extra + '</eSocial>', assinado = false, erroCert = '';
+    if (hk) return { id: dps.id, xml: xml, assinado: false, erroCert: '' };
     try { const c = ctx.credencial(); xml = assinar(dps.evt, dps.id, c.key, c.chain); assinado = true; } catch (e) { erroCert = (e && e.erro) || (e && e.message) || ''; /* sem certificado: devolve sem assinatura */ }
     return { id: dps.id, xml: xml, assinado: assinado, erroCert: erroCert };
   }
 
   async function admissao(corpo) {
     const d = corpo.func || {}, probs = validar(d);
+    if (corpo.hk) { const h = gerar(d, corpo.seq, true); return { ok: true, ambiente: ambiente(), evtId: h.id, xml: h.xml, assinado: false, faltam: probs }; } /* exportação para o HK: sem assinatura e sem exigir tudo */
     if (probs.length) return { ok: false, ambiente: ambiente(), estado: 'incompleto', erros: probs.map(p => 'Falta/inválido: ' + p) };
     const g = gerar(d, corpo.seq);
     if (corpo.apenasXml) return { ok: true, ambiente: ambiente(), evtId: g.id, xml: g.xml, assinado: g.assinado, avisoCert: g.erroCert };
