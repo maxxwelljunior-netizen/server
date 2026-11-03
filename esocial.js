@@ -109,7 +109,9 @@ function criar(ctx) {
       tag('motivoAdmissao', 'ADMISSÃO') + tag('inicioCargo', d.dtAdm) + tag('primeiraExperiencia', d.exp1 || d.dtAdm) + tag('segundaExperiencia', d.exp2 || d.dtAdm) +
       tag('cidadeNascimento', d.cidNasc) + tag('mae', d.mae) + tag('pai', d.pai) + tag('conjuge', d.conjuge) + tag('primeiroEmprego', Number(d.primeiroEmprego) ? 1 : 0) + tag('estrangeiro', Number(d.estrangeiro) ? 1 : 0) +
       g('pis', [tag('numero', dig(d.nis)), tag('serie', d.pisSerie), tag('dtEmissao', d.pisEmi)]) +
-      g('rg', [tag('uf', d.rgUf)]) +
+      g('rg', [tag('numero', d.rg), tag('orgaoEmissor', d.rgOrg), tag('uf', d.rgUf), tag('dtEmissao', d.rgEmi)]) +
+      g('ctps', [tag('numero', d.ctps), tag('serie', d.ctpsSerie), tag('uf', String(d.ctpsUf || '').toUpperCase()), tag('dtEmissao', d.ctpsEmi)]) +
+      g('naturalidade', [tag('uf', d.ufNasc), tag('codMunicipio', d.munNasc)]) +
       g('tituloEleitor', [tag('numero', d.titulo), tag('zona', d.tituloZona), tag('secao', d.tituloSecao), tag('dtEmissao', d.tituloEmi)]) +
       g('reservista', [tag('numero', d.reservista), tag('tipo', d.reservistaTipo)]) +
       g('habilitacao', [tag('numero', d.cnh), tag('tipo', d.cnhTipo), tag('vencimento', d.cnhVenc)]) +
