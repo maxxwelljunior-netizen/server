@@ -62,7 +62,6 @@ function validar(d) {
   f(/^[2-9]$/.test(String(d.tpJornada || '')), 'Tipo de jornada.');
   f(String(d.dscJorn || '').trim(), 'Descrição da jornada (dias e horários).');
   if (String(d.tpJornada) === '9') f(String(d.dscTpJorn || '').trim(), 'Descrição do tipo de jornada (jornada "demais tipos").');
-  f(cnpjOk(d.localCnpj), 'CNPJ do local de trabalho (válido).');
   f(cnpjOk(d.cnpjSind), 'CNPJ do sindicato da categoria profissional (válido).');
   return e;
 }
@@ -90,6 +89,9 @@ function criar(ctx) {
   const ambiente = () => (PRODUCAO ? 'produção' : 'teste (produção restrita)');
   /* No evento, o empregador (CNPJ) vai só com a RAIZ (8 dígitos); no Id a raiz é completada com zeros até 14 posições. */
   const raiz = () => dig(E.EMITENTE_CNPJ, 14).slice(0, 8);
+  /* localTrabGeral deve ser um ESTABELECIMENTO DO EMPREGADOR (cadastrado no S-1005), nunca o CNPJ do tomador.
+     Usa o CNPJ informado só se for da mesma raiz do empregador (filial); senão, o CNPJ do emitente (matriz). */
+  const localEstab = d => { const c = dig(d.localCnpj); return (c.length === 14 && cnpjOk(c) && c.slice(0, 8) === raiz()) ? c : dig(E.EMITENTE_CNPJ, 14); };
   /* Referência da assinatura: '' (documento inteiro, igual ao evento aceito pelo eSocial) ou 'id' (#Id do evento) */
   const REF_ID = String(E.ESOCIAL_REF_URI || '').toLowerCase() === 'id';
 
@@ -136,7 +138,7 @@ function criar(ctx) {
     const contrato = '<infoContrato>' + tag('nmCargo', d.cargo) + tag('CBOCargo', dig(d.cbo, 6)) + (d.funcao && String(d.funcao).trim().toUpperCase() !== String(d.cargo || '').trim().toUpperCase() ? tag('nmFuncao', d.funcao) + tag('CBOFuncao', dig(d.cbof || d.cbo, 6)) : '') +
       tag('codCateg', d.codCateg || '101') + '<remuneracao>' + tag('vrSalFx', num2(d.salario)) + tag('undSalFixo', '5') + '</remuneracao>' +
       (/^\d{4}-\d{2}-\d{2}$/.test(d.dtTerm || '') ? '<duracao>' + tag('tpContr', '2') + tag('dtTerm', d.dtTerm) + tag('clauAssec', 'N') + '</duracao>' : '<duracao>' + tag('tpContr', '1') + '</duracao>') +
-      '<localTrabalho><localTrabGeral>' + tag('tpInsc', '1') + tag('nrInsc', dig(d.localCnpj, 14)) + '</localTrabGeral></localTrabalho>' + hor + '</infoContrato>';
+      '<localTrabalho><localTrabGeral>' + tag('tpInsc', '1') + tag('nrInsc', localEstab(d)) + '</localTrabGeral></localTrabalho>' + hor + '</infoContrato>';
     const vinculo = '<vinculo>' + tag('matricula', d.matricula) + tag('tpRegTrab', '1') + tag('tpRegPrev', '1') + tag('cadIni', 'N') +
       '<infoRegimeTrab>' + celetista + '</infoRegimeTrab>' + contrato + '</vinculo>';
     const evt = '<evtAdmissao Id="' + id + '"><ideEvento>' + tag('indRetif', '1') + tag('tpAmb', TP_AMB) + tag('procEmi', '1') + tag('verProc', 'AXIS-1.0') + '</ideEvento>' +
