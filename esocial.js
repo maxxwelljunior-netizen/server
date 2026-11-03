@@ -46,7 +46,6 @@ function validar(d) {
   f(/^[1-6]$/.test(String(d.raca || '')), 'Raça/cor.');
   f(/^[1-5]$/.test(String(d.estCiv || '')), 'Estado civil.');
   f(/^\d{2}$/.test(String(d.grauInstr || '')), 'Grau de instrução.');
-  f(String(d.mae || '').trim().length >= 3, 'Nome da mãe.');
   f(dig(d.paisNasc || '105').length >= 3, 'País de nascimento.');
   f(dig(d.cep).length === 8, 'CEP (8 dígitos).');
   f(String(d.logradouro || '').trim(), 'Logradouro.');
@@ -89,6 +88,10 @@ function criar(ctx) {
     ? { sig: DSIG + 'rsa-sha1', dig: DSIG + 'sha1', node: 'RSA-SHA1', h: 'sha1' }
     : { sig: 'http://www.w3.org/2001/04/xmldsig-more#rsa-sha256', dig: 'http://www.w3.org/2001/04/xmlenc#sha256', node: 'RSA-SHA256', h: 'sha256' };
   const ambiente = () => (PRODUCAO ? 'produção' : 'teste (produção restrita)');
+  /* No evento, o empregador (CNPJ) vai só com a RAIZ (8 dígitos); no Id a raiz é completada com zeros até 14 posições. */
+  const raiz = () => dig(E.EMITENTE_CNPJ, 14).slice(0, 8);
+  /* Referência da assinatura: '' (documento inteiro, igual ao evento aceito pelo eSocial) ou 'id' (#Id do evento) */
+  const REF_ID = String(E.ESOCIAL_REF_URI || '').toLowerCase() === 'id';
 
   /* Só na exportação para o SAR2G/HK: documentos no lugar oficial do S-2200 */
   function docsHK(d, hk) {
@@ -102,7 +105,7 @@ function criar(ctx) {
     const g = (n, c) => { const s = c.join(''); return s ? '<' + n + '>' + s + '</' + n + '>' : ''; };
     return '<infoComplementarSAR2G>' + tag('apelido', d.apelido) + tag('empresa', d.empSar || d.emp) + tag('convencao', d.convencao) +
       tag('motivoAdmissao', 'ADMISSÃO') + tag('inicioCargo', d.dtAdm) + tag('primeiraExperiencia', d.exp1 || d.dtAdm) + tag('segundaExperiencia', d.exp2 || d.dtAdm) +
-      tag('cidadeNascimento', d.cidNasc) + tag('conjuge', d.conjuge) + tag('primeiroEmprego', Number(d.primeiroEmprego) ? 1 : 0) + tag('estrangeiro', Number(d.estrangeiro) ? 1 : 0) +
+      tag('cidadeNascimento', d.cidNasc) + tag('mae', d.mae) + tag('pai', d.pai) + tag('conjuge', d.conjuge) + tag('primeiroEmprego', Number(d.primeiroEmprego) ? 1 : 0) + tag('estrangeiro', Number(d.estrangeiro) ? 1 : 0) +
       g('pis', [tag('numero', dig(d.nis)), tag('serie', d.pisSerie), tag('dtEmissao', d.pisEmi)]) +
       g('rg', [tag('uf', d.rgUf)]) +
       g('tituloEleitor', [tag('numero', d.titulo), tag('zona', d.tituloZona), tag('secao', d.tituloSecao), tag('dtEmissao', d.tituloEmi)]) +
@@ -116,38 +119,38 @@ function criar(ctx) {
 
   /* S-2200 sem assinatura */
   function montarS2200(d, seq, hk) {
-    const cnpj = dig(E.EMITENTE_CNPJ, 14);
     const ts = new Date(Date.now() - 3 * 3600e3).toISOString().replace(/\D/g, '').slice(0, 14);
-    const id = 'ID1' + cnpj + ts + dig(seq || 1, 5).slice(-5);
+    const id = 'ID1' + raiz() + '000000' + ts + dig(seq || 1, 5).slice(-5);
     const brasil = '<brasil>' + tag('tpLograd', d.tpLograd || 'R') + tag('dscLograd', d.logradouro) + tag('nrLograd', d.nr || 'S/N') + tag('complemento', d.compl) +
       tag('bairro', d.bairro) + tag('cep', dig(d.cep, 8)) + tag('codMunic', dig(d.codMunic, 7)) + tag('uf', String(d.uf || '').toUpperCase()) + '</brasil>';
     const contato = (dig(d.tel) || d.email) ? '<contato>' + tag('fonePrinc', dig(d.tel)) + tag('emailPrinc', d.email) + '</contato>' : '';
     const br = String(d.paisNasc || '105') === '105';
     const trab = '<trabalhador>' + tag('cpfTrab', dig(d.cpf, 11)) + tag('nmTrab', d.nome) + tag('sexo', d.sexo) + tag('racaCor', d.raca) + tag('estCiv', d.estCiv) + tag('grauInstr', d.grauInstr) +
-      '<nascimento>' + tag('dtNascto', d.dtNasc) + /* S-1.3: sem município/UF de nascimento (o XSD rejeita) */
-      tag('paisNascto', dig(d.paisNasc || '105')) + tag('paisNac', dig(d.paisNac || d.paisNasc || '105')) + tag('nmMae', d.mae) + (hk ? tag('nmPai', d.pai) : '') + '</nascimento>' + docsHK(d, hk) +
+      '<nascimento>' + tag('dtNascto', d.dtNasc) + /* S-1.x: sem município/UF de nascimento nem nome da mãe/pai (o XSD rejeita) */
+      tag('paisNascto', dig(d.paisNasc || '105')) + tag('paisNac', dig(d.paisNac || d.paisNasc || '105')) + '</nascimento>' + docsHK(d, hk) +
       '<endereco>' + brasil + '</endereco>' + contato + '</trabalhador>';
     const celetista = '<infoCeletista>' + tag('dtAdm', d.dtAdm) + tag('tpAdmissao', '1') + tag('indAdmissao', '1') + tag('tpRegJor', '1') + tag('natAtividade', '1') +
       tag('dtBase', d.dtBase ? String(parseInt(d.dtBase, 10)) : '') + tag('cnpjSindCategProf', dig(d.cnpjSind, 14)) + '</infoCeletista>';
     const hor = '<horContratual>' + tag('qtdHrsSem', num2(d.hrSem)) + tag('tpJornada', d.tpJornada) + (String(d.tpJornada) === '9' ? tag('dscTpJorn', d.dscTpJorn) : '') +
-      tag('tmpParc', '0') + tag('dscJorn', d.dscJorn) + '</horContratual>';
-    const contrato = '<infoContrato>' + tag('nmCargo', d.cargo) + tag('CBOCargo', dig(d.cbo, 6)) + tag('nmFuncao', d.funcao || d.cargo) + tag('CBOFuncao', dig(d.cbof || d.cbo, 6)) +
+      tag('tmpParc', '0') + tag('horNoturno', String(d.horNoturno || 'N').toUpperCase() === 'S' ? 'S' : 'N') + tag('dscJorn', d.dscJorn) + '</horContratual>';
+    const contrato = '<infoContrato>' + tag('nmCargo', d.cargo) + tag('CBOCargo', dig(d.cbo, 6)) + (d.funcao && String(d.funcao).trim().toUpperCase() !== String(d.cargo || '').trim().toUpperCase() ? tag('nmFuncao', d.funcao) + tag('CBOFuncao', dig(d.cbof || d.cbo, 6)) : '') +
       tag('codCateg', d.codCateg || '101') + '<remuneracao>' + tag('vrSalFx', num2(d.salario)) + tag('undSalFixo', '5') + '</remuneracao>' +
-      '<duracao>' + tag('tpContr', '1') + '</duracao>' +
+      (/^\d{4}-\d{2}-\d{2}$/.test(d.dtTerm || '') ? '<duracao>' + tag('tpContr', '2') + tag('dtTerm', d.dtTerm) + tag('clauAssec', 'N') + '</duracao>' : '<duracao>' + tag('tpContr', '1') + '</duracao>') +
       '<localTrabalho><localTrabGeral>' + tag('tpInsc', '1') + tag('nrInsc', dig(d.localCnpj, 14)) + '</localTrabGeral></localTrabalho>' + hor + '</infoContrato>';
     const vinculo = '<vinculo>' + tag('matricula', d.matricula) + tag('tpRegTrab', '1') + tag('tpRegPrev', '1') + tag('cadIni', 'N') +
       '<infoRegimeTrab>' + celetista + '</infoRegimeTrab>' + contrato + '</vinculo>';
     const evt = '<evtAdmissao Id="' + id + '"><ideEvento>' + tag('indRetif', '1') + tag('tpAmb', TP_AMB) + tag('procEmi', '1') + tag('verProc', 'AXIS-1.0') + '</ideEvento>' +
-      '<ideEmpregador>' + tag('tpInsc', '1') + tag('nrInsc', cnpj) + '</ideEmpregador>' + trab + vinculo + '</evtAdmissao>';
+      '<ideEmpregador>' + tag('tpInsc', '1') + tag('nrInsc', raiz()) + '</ideEmpregador>' + trab + vinculo + '</evtAdmissao>';
     return { id: id, evt: evt, extra: hk ? extrasHK(d) : '' };
   }
 
   /* XMLDSig enveloped, C14N 1.0 — a assinatura fica ao lado do evtAdmissao, dentro de <eSocial> */
   function assinar(evt, id, keyPem, chainPem) {
-    const canon = evt.replace('<evtAdmissao ', '<evtAdmissao xmlns="' + NS_EVT + '" ');
+    /* URI="" (padrão): assina o documento inteiro, como no evento aceito pelo eSocial. ESOCIAL_REF_URI=id usa #Id do evento. */
+    const canon = REF_ID ? evt.replace('<evtAdmissao ', '<evtAdmissao xmlns="' + NS_EVT + '" ') : '<eSocial xmlns="' + NS_EVT + '">' + evt + '</eSocial>';
     const digest = crypto.createHash(ALG.h).update(canon, 'utf8').digest('base64');
     const si = '<CanonicalizationMethod Algorithm="' + C14N + '"></CanonicalizationMethod><SignatureMethod Algorithm="' + ALG.sig + '"></SignatureMethod>' +
-      '<Reference URI="#' + id + '"><Transforms><Transform Algorithm="' + DSIG + 'enveloped-signature"></Transform><Transform Algorithm="' + C14N + '"></Transform></Transforms>' +
+      '<Reference URI="' + (REF_ID ? '#' + id : '') + '"><Transforms><Transform Algorithm="' + DSIG + 'enveloped-signature"></Transform><Transform Algorithm="' + C14N + '"></Transform></Transforms>' +
       '<DigestMethod Algorithm="' + ALG.dig + '"></DigestMethod><DigestValue>' + digest + '</DigestValue></Reference>';
     const sig = crypto.createSign(ALG.node).update('<SignedInfo xmlns="' + DSIG + '">' + si + '</SignedInfo>', 'utf8').sign(keyPem, 'base64');
     const cert = chainPem.match(/-----BEGIN CERTIFICATE-----([^-]+)-----END CERTIFICATE-----/)[1].replace(/\s+/g, '');
@@ -157,7 +160,7 @@ function criar(ctx) {
 
   function montarLote(eventos) {
     const cnpj = dig(E.EMITENTE_CNPJ, 14);
-    return '<eSocial xmlns="' + NS_LOTE + '"><envioLoteEventos grupo="2"><ideEmpregador><tpInsc>1</tpInsc><nrInsc>' + cnpj + '</nrInsc></ideEmpregador>' +
+    return '<eSocial xmlns="' + NS_LOTE + '"><envioLoteEventos grupo="2"><ideEmpregador><tpInsc>1</tpInsc><nrInsc>' + raiz() + '</nrInsc></ideEmpregador>' +
       '<ideTransmissor><tpInsc>1</tpInsc><nrInsc>' + cnpj + '</nrInsc></ideTransmissor><eventos>' +
       eventos.map(e => '<evento Id="' + e.id + '">' + e.xml + '</evento>').join('') + '</eventos></envioLoteEventos></eSocial>';
   }

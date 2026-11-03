@@ -1353,13 +1353,13 @@ svg text.cell{fill:#fff;font-size:11px;font-weight:600;pointer-events:none}
       FL('ff_funcao','Função (se diferente do cargo)','text',x.funcao)+FL('ff_cbof','CBO da função (se diferente)','text',x.cbof)+FL('ff_sal','Salário base mensal (R$)','number',x.salario,'min="0" step="any"')+FL('ff_hrs','Horas semanais','number',x.hrSem||44,'min="0" max="44" step="any"')+
       SV('ff_jorn','Tipo de jornada',[['9','9 · Demais tipos de jornada'],['2','2 · Jornada 12 x 36'],['4','4 · Horário diário, folga fixa (domingo)'],['5','5 · Horário diário, folga fixa (exceto domingo)'],['7','7 · Turno ininterrupto de revezamento']],x.tpJornada||'9')+
       FL('ff_dscjorn','Descrição da jornada (dias e horários)','text',x.dscJorn)+FL('ff_dsctp','Descrição do tipo de jornada (se "demais tipos")','text',x.dscTpJorn)+
-      FL('ff_localcnpj','CNPJ do local de trabalho (tomador)','text',x.localCnpj)+FL('ff_sind','CNPJ do sindicato da categoria','text',x.cnpjSind)+FL('ff_dtbase','Mês da data-base (1 a 12)','number',x.dtBase,'min="1" max="12"')+FL('ff_dtdesl','Data de desligamento (se houver)','date',x.dtDesl)+
+      FL('ff_localcnpj','CNPJ do local de trabalho (tomador)','text',x.localCnpj)+FL('ff_sind','CNPJ do sindicato da categoria','text',x.cnpjSind)+FL('ff_dtbase','Mês da data-base (1 a 12)','number',x.dtBase,'min="1" max="12"')+FL('ff_dtterm','Término do contrato de experiência (se prazo determinado)','date',x.dtTerm)+FL('ff_dtdesl','Data de desligamento (se houver)','date',x.dtDesl)+
       '</div><div class="err" id="er"></div><div class="row"><button class="b2" data-a="fsv">Salvar</button><button class="b" data-a="fsve">Salvar e enviar ao eSocial</button>'+GO(nova?'fun':'fund:'+sel,'Cancelar')+'</div>'}
 
   function rd(){var g=function(i){var e=$('ff_'+i);return e?e.value.trim():''};
     return{emp:g('emp'),ctr:g('ctr'),nome:g('nome'),cpf:dg(g('cpf')),nis:dg(g('nis')),dtNasc:g('dtnasc'),sexo:g('sexo'),raca:g('raca'),estCiv:g('estciv'),grauInstr:g('instr'),mae:g('mae'),paisNasc:g('paisnasc')||'105',ufNasc:g('ufnasc'),munNasc:dg(g('munnasc')),tel:g('tel'),email:g('email'),
       cep:dg(g('cep')),tpLograd:g('tplog'),logradouro:g('logr'),nr:g('nr'),compl:g('compl'),bairro:g('bairro'),codMunic:dg(g('munend')),uf:g('ufend'),
-      matricula:g('mat'),codCateg:g('cat'),dtAdm:g('dtadm'),cargo:g('cargo'),cbo:dg(g('cbo')),funcao:g('funcao'),cbof:dg(g('cbof')),salario:n(g('sal')),hrSem:n(g('hrs')),tpJornada:g('jorn'),dscJorn:g('dscjorn'),dscTpJorn:g('dsctp'),localCnpj:dg(g('localcnpj')),cnpjSind:dg(g('sind')),dtBase:g('dtbase'),dtDesl:g('dtdesl')}}
+      matricula:g('mat'),codCateg:g('cat'),dtAdm:g('dtadm'),cargo:g('cargo'),cbo:dg(g('cbo')),funcao:g('funcao'),cbof:dg(g('cbof')),salario:n(g('sal')),hrSem:n(g('hrs')),tpJornada:g('jorn'),dscJorn:g('dscjorn'),dscTpJorn:g('dsctp'),localCnpj:dg(g('localcnpj')),cnpjSind:dg(g('sind')),dtBase:g('dtbase'),dtDesl:g('dtdesl'),dtTerm:g('dtterm')}}
 
   async function saveFn(enviar){
     var d=rd(),p=[];
