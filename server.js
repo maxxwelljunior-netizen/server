@@ -32,21 +32,35 @@ const dig = (s, n) => String(s == null ? '' : s).replace(/\D/g, '').padStart(n, 
 const b64 = b => Buffer.from(b).toString('base64');
 
 let CRED = null;
+const SEM_CERT = 'Certificado digital não configurado no servidor (CERT_PFX_BASE64 + CERT_PASSWORD).';
 function credencial() {
   if (CRED) return CRED;
+  let key, chain;
   if (E.CERT_KEY_PEM && E.CERT_CHAIN_PEM) {
-    CRED = { key: E.CERT_KEY_PEM.replace(/\\n/g, '\n'), chain: E.CERT_CHAIN_PEM.replace(/\\n/g, '\n') };
+    key = E.CERT_KEY_PEM.replace(/\\n/g, '\n'); chain = E.CERT_CHAIN_PEM.replace(/\\n/g, '\n');
   } else {
-    const forge = require('node-forge'), o = forge.pki.oids;
-    const p12 = forge.pkcs12.pkcs12FromAsn1(forge.asn1.fromDer(forge.util.decode64(E.CERT_PFX_BASE64 || '')), E.CERT_PASSWORD || '');
-    const bag = (t) => (p12.getBags({ bagType: t })[t] || []);
-    const kb = bag(o.pkcs8ShroudedKeyBag)[0] || bag(o.keyBag)[0];
-    const certs = bag(o.certBag).map(b => b.cert);
-    const leaf = certs.find(c => c.publicKey.n.compareTo(kb.key.n) === 0) || certs[0];
-    CRED = { key: forge.pki.privateKeyToPem(kb.key), chain: [leaf].concat(certs.filter(c => c !== leaf)).map(c => forge.pki.certificateToPem(c)).join('') };
+    if (!String(E.CERT_PFX_BASE64 || '').trim()) throw { status: 500, erro: SEM_CERT };
+    try {
+      const forge = require('node-forge'), o = forge.pki.oids;
+      const p12 = forge.pkcs12.pkcs12FromAsn1(forge.asn1.fromDer(forge.util.decode64(String(E.CERT_PFX_BASE64).replace(/\s+/g, ''))), E.CERT_PASSWORD || '');
+      const bag = (t) => (p12.getBags({ bagType: t })[t] || []);
+      const kb = bag(o.pkcs8ShroudedKeyBag)[0] || bag(o.keyBag)[0];
+      const certs = bag(o.certBag).map(b => b.cert);
+      const leaf = certs.find(c => c.publicKey.n.compareTo(kb.key.n) === 0) || certs[0];
+      key = forge.pki.privateKeyToPem(kb.key);
+      chain = [leaf].concat(certs.filter(c => c !== leaf)).map(c => forge.pki.certificateToPem(c)).join('');
+    } catch (e) {
+      console.error('Certificado:', e && e.message);
+      throw { status: 500, erro: 'O certificado está configurado, mas não abriu: confira a senha (CERT_PASSWORD) e se o CERT_PFX_BASE64 foi colado inteiro, sem cortes. Detalhe: ' + (e && e.message || e) };
+    }
   }
+  let info = {};
+  try { const x = new crypto.X509Certificate(chain.match(/-----BEGIN CERTIFICATE-----[^-]+-----END CERTIFICATE-----/)[0]); info = { titular: x.subject.replace(/\n/g, ', '), validoAte: new Date(x.validTo).toISOString().slice(0, 10), vencido: new Date(x.validTo) < new Date() }; } catch (e) {}
+  if (info.vencido) throw { status: 500, erro: 'O certificado digital configurado no servidor está vencido (' + info.validoAte + '). Instale um A1 válido.' };
+  CRED = { key: key, chain: chain, info: info };
   return CRED;
 }
+function certStatus() { try { return Object.assign({ ok: true }, credencial().info); } catch (e) { return { ok: false, erro: e && e.erro || String(e) }; } }
 
 /* DPS do Simples Nacional (ME/EPP), prestador emitindo (tpEmit=1) */
 function montarDPS(d) {
@@ -145,7 +159,7 @@ function servidor() {
     const cors = { 'Access-Control-Allow-Origin': E.ALLOWED_ORIGIN || '*', 'Access-Control-Allow-Headers': 'Content-Type, Authorization', 'Access-Control-Allow-Methods': 'POST, GET, OPTIONS' };
     const fim = (s, o) => { res.writeHead(s, Object.assign({ 'Content-Type': 'application/json' }, cors)); res.end(JSON.stringify(o)); };
     if (req.method === 'OPTIONS') return fim(204, {});
-    if (req.method === 'GET') return fim(200, { ok: true, ambiente: PRODUCAO ? 'produção' : 'teste', esocial: ES.ambiente() });
+    if (req.method === 'GET') return fim(200, { ok: true, ambiente: PRODUCAO ? 'produção' : 'teste', esocial: ES.ambiente(), certificado: certStatus() });
     if (req.method !== 'POST') return fim(405, { ok: false, erro: 'Método não permitido.' });
     let t = ''; req.on('data', x => { t += x; if (t.length > 1e5) req.destroy(); });
     const rota = (req.url || '').split('?')[0];

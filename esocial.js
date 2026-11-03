@@ -188,17 +188,17 @@ function criar(ctx) {
   /* Gera (e, se houver certificado, assina) o S-2200 de um funcionário */
   function gerar(d, seq) {
     const dps = montarS2200(d, seq);
-    let xml = '<eSocial xmlns="' + NS_EVT + '">' + dps.evt + '</eSocial>', assinado = false;
-    try { const c = ctx.credencial(); xml = assinar(dps.evt, dps.id, c.key, c.chain); assinado = true; } catch (e) { /* sem certificado: devolve sem assinatura */ }
-    return { id: dps.id, xml: xml, assinado: assinado };
+    let xml = '<eSocial xmlns="' + NS_EVT + '">' + dps.evt + '</eSocial>', assinado = false, erroCert = '';
+    try { const c = ctx.credencial(); xml = assinar(dps.evt, dps.id, c.key, c.chain); assinado = true; } catch (e) { erroCert = (e && e.erro) || (e && e.message) || ''; /* sem certificado: devolve sem assinatura */ }
+    return { id: dps.id, xml: xml, assinado: assinado, erroCert: erroCert };
   }
 
   async function admissao(corpo) {
     const d = corpo.func || {}, probs = validar(d);
     if (probs.length) return { ok: false, ambiente: ambiente(), estado: 'incompleto', erros: probs.map(p => 'Falta/inválido: ' + p) };
     const g = gerar(d, corpo.seq);
-    if (corpo.apenasXml) return { ok: true, ambiente: ambiente(), evtId: g.id, xml: g.xml, assinado: g.assinado };
-    if (!g.assinado) throw { status: 500, erro: 'Certificado digital não configurado no servidor (CERT_PFX_BASE64 + CERT_PASSWORD).' };
+    if (corpo.apenasXml) return { ok: true, ambiente: ambiente(), evtId: g.id, xml: g.xml, assinado: g.assinado, avisoCert: g.erroCert };
+    if (!g.assinado) throw { status: 500, erro: g.erroCert || 'Certificado digital não configurado no servidor (CERT_PFX_BASE64 + CERT_PASSWORD).' };
     const env = soap(NS_SOAP_ENVIO, 'EnviarLoteEventos', '<v1:loteEventos>' + montarLote([{ id: g.id, xml: g.xml }]) + '</v1:loteEventos>');
     const r = lerEnvio(await chamar(URL_ENVIO, NS_SOAP_ENVIO + '/ServicoEnviarLoteEventos/EnviarLoteEventos', env));
     return { ok: r.estado === 'enviado', ambiente: ambiente(), evtId: g.id, estado: r.estado, protocolo: r.protocolo, erros: r.msgs };

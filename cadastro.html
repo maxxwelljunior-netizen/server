@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AXIS · Cadastro de funcionário</title>
+<style>
+:root{--ouro:#c9a24a;--gr:#2b2f36;--bg:#f5f4f1;--bd:#d9d6cf;--bad:#b3382c;--ok:#2e7d5b}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--gr);font:15px/1.4 system-ui,-apple-system,Segoe UI,sans-serif}
+header{background:var(--gr);color:#fff;padding:14px 18px;display:flex;gap:10px;align-items:center}
+header i{background:var(--ouro);color:var(--gr);font:700 20px/1 Georgia,serif;width:34px;height:34px;display:grid;place-items:center;border-radius:6px;font-style:normal}
+main{max-width:860px;margin:0 auto;padding:16px}h1{font-size:20px;margin:8px 0 4px}h3{margin:22px 0 8px;padding-bottom:4px;border-bottom:2px solid var(--ouro);font-size:16px}
+p.s{color:#6b7683;margin:2px 0 10px}.g{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:10px}
+label{display:block;font-size:13px;font-weight:600;margin-bottom:3px}label b{color:var(--bad)}
+input,select{width:100%;padding:10px;border:1px solid var(--bd);border-radius:6px;font:inherit;background:#fff}input:focus,select:focus{outline:2px solid var(--ouro);border-color:var(--ouro)}
+.bad input,.bad select{border-color:var(--bad)}button{background:var(--ouro);color:var(--gr);border:0;border-radius:6px;padding:12px 22px;font:700 15px system-ui,sans-serif;cursor:pointer}button:disabled{opacity:.5}
+.box{background:#fff;border:1px solid var(--bd);border-radius:8px;padding:14px;margin-top:12px}.err{color:var(--bad);font-weight:600;margin:10px 0;white-space:pre-line}
+#pv{width:120px;height:120px;border-radius:50%;object-fit:cover;background:#e6e3dc;border:2px solid var(--ouro);display:block;margin-bottom:8px}.ck{display:flex;gap:8px;align-items:flex-start;font-size:13px}.ck input{width:auto;margin-top:3px}
+.fim{text-align:center;padding:40px 10px}.fim h2{color:var(--ok)}
+</style></head><body>
+<header><i>A</i><div><b>AXIS</b><br><small>Cadastro de funcionário</small></div></header>
+<main id="m"><p class="s">Carregando…</p></main>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+var URL_SB='https://hedbzwqacopbjijuymzs.supabase.co',KEY_SB='sb_publishable_FLSlRu1aJzD44TFZOetk3Q_oChFBsaS';
+var sb=window.supabase.createClient(URL_SB,KEY_SB),TK=new URLSearchParams(location.search).get('t')||'',foto=null,$=function(i){return document.getElementById(i)};
+var UFS='AC AL AM AP BA CE DF ES GO MA MG MS MT PA PB PE PI PR RJ RN RO RR RS SC SE SP TO'.split(' ');
+var OP={sexo:[['M','Masculino'],['F','Feminino']],raca:[[1,'Branca'],[2,'Preta'],[3,'Parda'],[4,'Amarela'],[5,'Indígena'],[6,'Prefiro não informar']],
+estCiv:[[1,'Solteiro(a)'],[2,'Casado(a)'],[3,'Divorciado(a)'],[4,'Separado(a)'],[5,'Viúvo(a)']],
+grauInstr:[['02','Fundamental incompleto'],['05','Fundamental completo'],['06','Médio incompleto'],['07','Médio completo'],['08','Superior incompleto'],['09','Superior completo'],['10','Pós-graduação'],['11','Mestrado'],['12','Doutorado']],
+uf:[['','—']].concat(UFS.map(function(u){return[u,u]})),sn:[[0,'Não'],[1,'Sim']],
+tpLograd:[['R','Rua'],['AV','Avenida'],['TV','Travessa'],['AL','Alameda'],['ROD','Rodovia'],['EST','Estrada'],['PC','Praça']],
+zona:[['','—'],['URBANA','Urbana'],['RURAL','Rural']],conta:[['','—'],['CORRENTE','Conta corrente'],['POUPANÇA','Poupança'],['SALÁRIO','Conta salário']],
+cnh:[['','—'],['A','A'],['B','B'],['AB','AB'],['C','C'],['D','D'],['E','E']]};
+/* [chave, rótulo, tipo (t=texto, d=data, e=e-mail, s=lista), lista, obrigatório] */
+var SEC=[['Dados pessoais',[['nome','Nome completo','t',0,1],['apelido','Como gosta de ser chamado(a)','t'],['cpf','CPF','t',0,1],['dtNasc','Data de nascimento','d',0,1],['sexo','Sexo','s','sexo',1],['raca','Raça/cor','s','raca',1],['estCiv','Estado civil','s','estCiv',1],['grauInstr','Escolaridade','s','grauInstr',1],['ufNasc','UF de nascimento','s','uf',1],['munNasc','Cidade de nascimento','c',0,1],['primeiroEmprego','Primeiro emprego?','s','sn']]],
+['Família',[['mae','Nome da mãe','t',0,1],['pai','Nome do pai','t'],['conjuge','Cônjuge','t']]],
+['Contato',[['tel','Celular (com DDD)','t',0,1],['email','E-mail','e',0,1]]],
+['Endereço',[['cep','CEP','t',0,1],['tpLograd','Tipo','s','tpLograd'],['logradouro','Logradouro','t',0,1],['nr','Número (ou S/N)','t',0,1],['compl','Complemento','t'],['bairro','Bairro','t',0,1],['cidEnd','Cidade','t',0,1],['uf','UF','s','uf',1],['referencia','Ponto de referência','t'],['zonaMoradia','Zona de moradia','s','zona']]],
+['Documentos',[['rg','RG','t',0,1],['rgUf','UF do RG','s','uf'],['rgOrg','Órgão emissor','t'],['rgEmi','Data de emissão do RG','d'],['ctps','CTPS (número)','t'],['ctpsSerie','CTPS série','t'],['ctpsUf','CTPS UF','s','uf'],['ctpsEmi','CTPS data de emissão','d'],
+['nis','PIS/NIS','t'],['pisEmi','Data de emissão do PIS','d'],['titulo','Título de eleitor','t'],['tituloZona','Zona','t'],['tituloSecao','Seção','t'],['tituloEmi','Data de emissão do título','d'],['reservista','Reservista (se houver)','t'],['cnh','CNH (se houver)','t'],['cnhTipo','Categoria da CNH','s','cnh'],['cnhVenc','Vencimento da CNH','d']]],
+['Dados bancários (para o pagamento)',[['tipoConta','Tipo de conta','s','conta'],['banco','Banco (nome ou código)','t'],['agencia','Agência','t'],['agenciaDig','Dígito da agência','t'],['conta','Conta','t'],['contaDig','Dígito da conta','t']]]];
+var ES=[['rne','RNE / CRNM','t'],['rneChegada','Data de chegada ao Brasil','d'],['rneValidade','Validade do RNE','d'],['rneVisto','Tipo de visto','t'],['paisNasc','Código do país de nascimento no eSocial (se souber)','t']];
+function campo(f){var id='f_'+f[0],h='<div id="w_'+id+'"><label for="'+id+'">'+f[1]+(f[4]?' <b>*</b>':'')+'</label>';
+ if(f[2]=='s')h+='<select id="'+id+'">'+OP[f[3]].map(function(o){return'<option value="'+o[0]+'">'+o[1]+'</option>'}).join('')+'</select>';
+ else if(f[2]=='c')h+='<select id="'+id+'"><option value="">Escolha a UF primeiro</option></select>';
+ else h+='<input id="'+id+'" type="'+(f[2]=='d'?'date':f[2]=='e'?'email':'text')+'"'+(f[0]=='cpf'||f[0]=='cep'||f[0]=='tel'?' inputmode="numeric"':'')+' autocomplete="off">';
+ return h+'</div>'}
+function esc(s){return String(s||'').replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
+function tela(inf){var h='<h1>Olá'+(inf.nome?', '+esc(inf.nome.split(' ')[0]):'')+'!</h1><p class="s">Preencha seus dados para o seu cadastro na <b>'+esc(inf.emp||'empresa')+'</b>'+(inf.cargo?' (cargo: '+esc(inf.cargo)+(inf.dtAdm?', admissão '+inf.dtAdm.split('-').reverse().join('/'):'')+')':'')+'. Os campos com <b style="color:var(--bad)">*</b> são obrigatórios. Se não tiver algum documento, deixe em branco.</p>';
+ h+='<div class="box"><label for="foto">Sua foto (rosto, fundo claro)</label><img id="pv" alt=""><input id="foto" type="file" accept="image/*" capture="user"></div>';
+ SEC.forEach(function(s){h+='<h3>'+s[0]+'</h3><div class="g">'+s[1].map(campo).join('')+'</div>'});
+ h+='<div class="box"><label class="ck"><input type="checkbox" id="est"> Nasci em outro país (estrangeiro)</label><div class="g" id="estb" hidden style="margin-top:10px">'+ES.map(campo).join('')+'</div></div>';
+ h+='<div class="box"><label class="ck"><input type="checkbox" id="lgpd"> Declaro que as informações são verdadeiras e autorizo o uso dos meus dados para fins de admissão, folha e obrigações legais (eSocial), conforme a LGPD.</label></div><div class="err" id="er"></div><p><button id="env">Enviar meu cadastro</button></p>';
+ $('m').innerHTML=h;
+ $('est').onchange=function(){$('estb').hidden=!this.checked};
+ $('f_ufNasc').onchange=function(){cidades(this.value,'f_munNasc')};
+ $('f_cep').onblur=cep;$('foto').onchange=pegarFoto;$('env').onclick=enviar}
+async function cidades(uf,sel,pre){var e=$(sel);if(!uf){e.innerHTML='<option value="">Escolha a UF primeiro</option>';return}
+ e.innerHTML='<option value="">Carregando…</option>';
+ try{var l=await(await fetch('https://servicodados.ibge.gov.br/api/v1/localidades/estados/'+uf+'/municipios?orderBy=nome')).json();
+  e.innerHTML='<option value="">— escolha —</option>'+l.map(function(c){return'<option value="'+c.id+'">'+esc(c.nome)+'</option>'}).join('');if(pre)e.value=pre}
+ catch(x){e.outerHTML='<input id="'+sel+'" type="text" placeholder="Digite o nome da cidade">'}}
+async function cep(){var c=this.value.replace(/\D/g,'');if(c.length!=8)return;
+ try{var j=await(await fetch('https://viacep.com.br/ws/'+c+'/json/')).json();if(j.erro)return;
+  var p=function(i,v){if(v&&!$(i).value)$(i).value=v};p('f_logradouro',j.logradouro);p('f_bairro',j.bairro);p('f_cidEnd',j.localidade);$('f_uf').value=j.uf||$('f_uf').value;window.IBGE_END=j.ibge||''}catch(x){}}
+function pegarFoto(){var a=this.files[0];if(!a)return;var im=new Image();im.onload=function(){var m=600,k=Math.min(1,m/Math.max(im.width,im.height)),c=document.createElement('canvas');c.width=Math.round(im.width*k);c.height=Math.round(im.height*k);
+ c.getContext('2d').drawImage(im,0,0,c.width,c.height);c.toBlob(function(b){foto=b;$('pv').src=URL.createObjectURL(b)},'image/jpeg',.85)};im.onerror=function(){$('er').textContent='Não consegui ler essa imagem. Tente outra foto.'};im.src=URL.createObjectURL(a)}
+function cpfOk(c){c=c.replace(/\D/g,'');if(c.length!=11||/^(\d)\1+$/.test(c))return false;for(var t=9;t<11;t++){var s=0;for(var i=0;i<t;i++)s+=c[i]*(t+1-i);if((s*10)%11%10!=c[t])return false}return true}
+async function enviar(){var d={},er=[],b=$('env');$('er').textContent='';document.querySelectorAll('.bad').forEach(function(x){x.classList.remove('bad')});
+ SEC.concat([['',ES]]).forEach(function(s){s[1].forEach(function(f){var e=$('f_'+f[0]);if(!e)return;var v=e.value.trim();
+  if(f[4]&&!v){er.push('Preencha: '+f[1]);e.parentNode.classList.add('bad')}if(v!==''&&!(s[0]==''&&!$('est').checked))d[f[0]]=v})});
+ if(d.cpf&&!cpfOk(d.cpf)){er.push('CPF inválido.');$('w_f_cpf').classList.add('bad')}
+ if(d.email&&!/^\S+@\S+\.\S+$/.test(d.email)){er.push('E-mail inválido.');$('w_f_email').classList.add('bad')}
+ if(!$('lgpd').checked)er.push('Marque a declaração no final da página.');
+ if(er.length)return $('er').textContent=er.slice(0,8).join('\n')+(er.length>8?'\n…e mais '+(er.length-8):'');
+ d.cpf=d.cpf.replace(/\D/g,'');['cep','nis','tel'].forEach(function(k){if(d[k])d[k]=d[k].replace(/\D/g,'')});
+ var m=$('f_munNasc');if(m.tagName=='SELECT'){d.cidNasc=m.options[m.selectedIndex].text+'/'+d.ufNasc}else{d.cidNasc=d.munNasc+'/'+d.ufNasc;delete d.munNasc}
+ if(window.IBGE_END)d.codMunic=window.IBGE_END;d.primeiroEmprego=d.primeiroEmprego||'0';if($('est').checked)d.estrangeiro='1';
+ b.disabled=true;b.textContent='Enviando…';
+ try{if(foto){var p=TK+'/'+(crypto.randomUUID?crypto.randomUUID():Date.now())+'.jpg',u=await sb.storage.from('fotos-func').upload(p,foto,{contentType:'image/jpeg'});if(u.error)throw u.error;d.fotoPath=p}
+  var r=await sb.rpc('axis_enviar_cadastro',{p_token:TK,p_dados:d});if(r.error)throw r.error;
+  if(!r.data||!r.data.ok){b.disabled=false;b.textContent='Enviar meu cadastro';return $('er').textContent=(r.data&&r.data.erro)||'Não foi possível enviar.'}
+  $('m').innerHTML='<div class="fim"><h2>Cadastro enviado!</h2><p>Recebemos seus dados. O RH vai conferir e falar com você se precisar de algo.</p></div>'}
+ catch(x){console.error(x);b.disabled=false;b.textContent='Enviar meu cadastro';$('er').textContent='Falha ao enviar. Confira sua internet e tente de novo.'}}
+(async function(){try{var r=await sb.rpc('axis_convite_info',{p_token:TK});if(r.error||!r.data)throw 0;tela(r.data)}
+ catch(e){$('m').innerHTML='<div class="fim"><h2 style="color:var(--bad)">Link inválido ou já utilizado</h2><p>Peça um novo link ao RH.</p></div>'}})();
+</script></body></html>
