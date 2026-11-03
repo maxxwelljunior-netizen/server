@@ -5,6 +5,9 @@
   O ambiente padrão é PRODUÇÃO RESTRITA (teste, sem validade fiscal).
   Só emite de verdade se NFSE_AMBIENTE=producao E NFSE_CONFIRMO_PRODUCAO=SIM.
 
+  Também atende o eSocial (admissão de funcionários — rotas /esocial/admissao e /esocial/consulta); veja esocial.js.
+  O ambiente do eSocial é separado: ESOCIAL_AMBIENTE=producao + ESOCIAL_CONFIRMO_PRODUCAO=SIM para valer de verdade.
+
   Variáveis de ambiente (nunca coloque isto no HTML):
     CERT_PFX_BASE64 + CERT_PASSWORD   certificado A1 (.pfx em base64) e senha
       (alternativa: CERT_KEY_PEM + CERT_CHAIN_PEM)
@@ -20,6 +23,7 @@ const PRODUCAO = E.NFSE_AMBIENTE === 'producao' && E.NFSE_CONFIRMO_PRODUCAO === 
 const TP_AMB = PRODUCAO ? 1 : 2;
 const BASE = (E.NFSE_BASE_URL || (PRODUCAO ? 'https://sefin.nfse.gov.br/SefinNacional' : 'https://sefin.producaorestrita.nfse.gov.br/SefinNacional')).replace(/\/$/, '');
 const PERFIS = ['financeiro', 'diretor', 'administrador', 'admin'];
+const PERFIS_RH = ['rh', 'financeiro', 'diretor', 'administrador', 'admin'];
 const NS = 'http://www.sped.fazenda.gov.br/nfse', DSIG = 'http://www.w3.org/2000/09/xmldsig#';
 const C14N = 'http://www.w3.org/TR/2001/REC-xml-c14n-20010315';
 
@@ -87,7 +91,7 @@ function enviar(xml) {
   });
 }
 
-async function autorizar(req) {
+async function autorizar(req, perfis) {
   const tk = (req.headers.authorization || '').replace(/^Bearer\s+/i, '');
   if (!tk) throw { status: 401, erro: 'Faça login no sistema.' };
   const h = { apikey: E.SUPABASE_ANON_KEY, Authorization: 'Bearer ' + tk };
@@ -95,7 +99,7 @@ async function autorizar(req) {
   if (!u.ok) throw { status: 401, erro: 'Sessão inválida. Entre novamente.' };
   const p = await fetch(E.SUPABASE_URL + '/rest/v1/rpc/axis_perfil', { method: 'POST', headers: Object.assign({ 'Content-Type': 'application/json' }, h), body: '{}' });
   const perfil = String(await p.json().catch(() => '')).toLowerCase();
-  if (PERFIS.indexOf(perfil) < 0) throw { status: 403, erro: 'Seu perfil não tem permissão para emitir notas.' };
+  if ((perfis || PERFIS).indexOf(perfil) < 0) throw { status: 403, erro: 'Seu perfil não tem permissão para esta operação.' };
 }
 
 function interpretar(r) {
@@ -125,17 +129,29 @@ async function emitir(req, corpo) {
   return { ok: true, ambiente: ambiente, numero: r.numero, chave: r.chave, dps: dps.id };
 }
 
+/* eSocial (admissão de funcionários) — ver esocial.js */
+const ES = require('./esocial')({ E: E, credencial: credencial });
+async function esocialRota(req, url, corpo) {
+  await autorizar(req, PERFIS_RH);
+  if (!E.EMITENTE_CNPJ) throw { status: 500, erro: 'EMITENTE_CNPJ não configurado no servidor.' };
+  const d = JSON.parse(corpo || '{}');
+  if (url === '/esocial/admissao') return ES.admissao(d);
+  if (url === '/esocial/consulta') return ES.consulta(d);
+  throw { status: 404, erro: 'Rota não encontrada.' };
+}
+
 function servidor() {
   return http.createServer((req, res) => {
     const cors = { 'Access-Control-Allow-Origin': E.ALLOWED_ORIGIN || '*', 'Access-Control-Allow-Headers': 'Content-Type, Authorization', 'Access-Control-Allow-Methods': 'POST, GET, OPTIONS' };
     const fim = (s, o) => { res.writeHead(s, Object.assign({ 'Content-Type': 'application/json' }, cors)); res.end(JSON.stringify(o)); };
     if (req.method === 'OPTIONS') return fim(204, {});
-    if (req.method === 'GET') return fim(200, { ok: true, ambiente: PRODUCAO ? 'produção' : 'teste' });
+    if (req.method === 'GET') return fim(200, { ok: true, ambiente: PRODUCAO ? 'produção' : 'teste', esocial: ES.ambiente() });
     if (req.method !== 'POST') return fim(405, { ok: false, erro: 'Método não permitido.' });
     let t = ''; req.on('data', x => { t += x; if (t.length > 1e5) req.destroy(); });
-    req.on('end', () => emitir(req, t).then(o => fim(200, o)).catch(e => { console.error(e && e.erro || e); fim(e && e.status || 500, { ok: false, ambiente: PRODUCAO ? 'produção' : 'teste', erro: e && e.erro || 'Falha interna ao emitir a nota.' }); }));
+    const rota = (req.url || '').split('?')[0];
+    req.on('end', () => (rota.indexOf('/esocial/') === 0 ? esocialRota(req, rota, t) : emitir(req, t)).then(o => fim(200, o)).catch(e => { console.error(e && e.erro || e); fim(e && e.status || 500, { ok: false, ambiente: PRODUCAO ? 'produção' : 'teste', erro: e && e.erro || 'Falha interna ao emitir a nota.' }); }));
   });
 }
 
-module.exports = { montarDPS, assinar, interpretar };
+module.exports = { montarDPS, assinar, interpretar, ES };
 if (require.main === module) servidor().listen(E.PORT || 3000, () => console.log('AXIS NFS-e: ambiente ' + (PRODUCAO ? 'PRODUÇÃO' : 'teste (produção restrita)')));
