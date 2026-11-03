@@ -48,7 +48,6 @@ function validar(d) {
   f(/^\d{2}$/.test(String(d.grauInstr || '')), 'Grau de instrução.');
   f(String(d.mae || '').trim().length >= 3, 'Nome da mãe.');
   f(dig(d.paisNasc || '105').length >= 3, 'País de nascimento.');
-  if (String(d.paisNasc || '105') === '105') { f(dig(d.munNasc).length === 7, 'Município de nascimento (código IBGE de 7 dígitos).'); f(/^[A-Za-z]{2}$/.test(d.ufNasc || ''), 'UF de nascimento.'); }
   f(dig(d.cep).length === 8, 'CEP (8 dígitos).');
   f(String(d.logradouro || '').trim(), 'Logradouro.');
   f(String(d.nr || '').trim(), 'Número do endereço (ou S/N).');
@@ -125,7 +124,7 @@ function criar(ctx) {
     const contato = (dig(d.tel) || d.email) ? '<contato>' + tag('fonePrinc', dig(d.tel)) + tag('emailPrinc', d.email) + '</contato>' : '';
     const br = String(d.paisNasc || '105') === '105';
     const trab = '<trabalhador>' + tag('cpfTrab', dig(d.cpf, 11)) + tag('nmTrab', d.nome) + tag('sexo', d.sexo) + tag('racaCor', d.raca) + tag('estCiv', d.estCiv) + tag('grauInstr', d.grauInstr) +
-      '<nascimento>' + tag('dtNascto', d.dtNasc) + (br ? tag('codMunic', dig(d.munNasc, 7)) + tag('uf', String(d.ufNasc || '').toUpperCase()) : '') +
+      '<nascimento>' + tag('dtNascto', d.dtNasc) + /* S-1.3: sem município/UF de nascimento (o XSD rejeita) */
       tag('paisNascto', dig(d.paisNasc || '105')) + tag('paisNac', dig(d.paisNac || d.paisNasc || '105')) + tag('nmMae', d.mae) + (hk ? tag('nmPai', d.pai) : '') + '</nascimento>' + docsHK(d, hk) +
       '<endereco>' + brasil + '</endereco>' + contato + '</trabalhador>';
     const celetista = '<infoCeletista>' + tag('dtAdm', d.dtAdm) + tag('tpAdmissao', '1') + tag('indAdmissao', '1') + tag('tpRegJor', '1') + tag('natAtividade', '1') +
