@@ -880,7 +880,7 @@ var NVB=[['bhome','Visão geral'],['bcont','Demonstrativos de contratos'],['brec
 var NV=[['dash','Cockpit executivo'],['resumo','Resumo p/ diretoria'],['cont','Contratos'],['lic','Licitações','Comercial'],['crm','CRM · contratos privados','Comercial'],['doc','Documentos','Comercial'],['rec','Contas a receber','Financeiro'],['nf','Notas fiscais','Financeiro'],['pag','Contas a pagar','Financeiro'],['op','Operacional'],['jur','Jurídico'],['al','Alertas'],['cf','Configurações']],V={bhome:bhome,bcont:bcont,brec:brec,blic:blic,bjur:bjur,resumo:resumo,crm:()=>gl('crm'),crmf:()=>gf('crm'),nf:()=>gl('nf'),nff:()=>gf('nf'),rec:()=>gl('rec'),recf:()=>gf('rec'),pag:()=>gl('pag'),pagf:()=>gf('pag'),jur:jur,jform:jform,doc:docs,dform:dform,lic:lic,bform:bform,dash:dash,cont:cont,form:form,det:det,op:op,al:al,cf:cf};
 function draw(){var board=BOARD();
 if(board&&NVB.every(x=>x[0]!=view))view='bhome';
-$('nv').innerHTML=board?NVB.map(x=>'<button data-a="go" data-p="'+x[0]+'" class="'+(view==x[0]?'on':'')+'">'+x[1]+'</button>').join(''):(function(){var g='',o='';NV.forEach(function(x){if(x[0]=='jur'&&!JOK())return;if(x[0]=='fun'&&!PEOK())return;if(x[2]=='Financeiro'&&!FOK())return;if(x[2]!=g){g=x[2]||'';if(g)o+='<div class="ng">'+g+'</div>'}var on=view==x[0]||view==x[0]+'f'||(x[0]=='fun'&&view=='fund')||(x[0]=='cont'&&(view=='det'||view=='form'))||(x[0]=='lic'&&view=='bform')||(x[0]=='doc'&&view=='dform')||(x[0]=='jur'&&view=='jform');o+='<button data-a="go" data-p="'+x[0]+'" class="'+(on?'on ':'')+(x[2]?'sub2':'')+'">'+x[1]+'</button>'});return o})();
+$('nv').innerHTML=board?NVB.map(x=>'<button data-a="go" data-p="'+x[0]+'" class="'+(view==x[0]?'on':'')+'">'+x[1]+'</button>').join(''):(function(){var g='',o='';NV.forEach(function(x){if(x[0]=='jur'&&!JOK())return;if((x[0]=='fun'||x[0]=='esoc')&&!PEOK())return;if(x[2]=='Financeiro'&&!FOK())return;if(x[2]!=g){g=x[2]||'';if(g)o+='<div class="ng">'+g+'</div>'}var on=view==x[0]||view==x[0]+'f'||(x[0]=='fun'&&view=='fund')||(x[0]=='cont'&&(view=='det'||view=='form'))||(x[0]=='lic'&&view=='bform')||(x[0]=='doc'&&view=='dform')||(x[0]=='jur'&&view=='jform');o+='<button data-a="go" data-p="'+x[0]+'" class="'+(on?'on ':'')+(x[2]?'sub2':'')+'">'+x[1]+'</button>'});return o})();
 $('mn').innerHTML=db||!ok?V[view]():'<p class="sub">Não foi possível conectar ao banco de dados. Faça login novamente ou recarregue a página.</p>'}
 function refresh(){if(view=='jform'||view=='funf'||VK[view])return;var a=document.activeElement;if(a&&a.tagName=='INPUT'&&$('mn').contains(a))return;draw()}
 function er(t){var e=$('er');if(e)e.textContent=t}
@@ -1543,6 +1543,156 @@ svg text.cell{fill:#fff;font-size:11px;font-weight:600;pointer-events:none}
     else if(i=='rf_emp'){RF.emp=e.target.value;RF.ct='';draw()}else if(i=='rf_ct'){RF.ct=e.target.value;draw()}else if(i=='rpd'){RPd=+e.target.value||6;draw()}
     else if(i=='fq'){FQ.q=e.target.value;draw()}else if(i=='fc'){FQ.ct=e.target.value;draw()}else if(i=='fs'){FQ.st=e.target.value;draw()}
     else if(i=='ff_ctr'){var c=CT0.find(function(x){return x.id==e.target.value});if(c){if($('ff_localcnpj')&&!$('ff_localcnpj').value)$('ff_localcnpj').value=c.cnpj||'';if(c.emp&&$('ff_emp'))$('ff_emp').value=c.emp}}},true);
+})();
+/* ===== AXIS · Módulo eSocial (Etapas 3 e 4): painel, obrigações e catálogo ===== */
+;(function(){
+var ES={tab:'painel',loaded:false,loading:false,err:'',oc:[],ev:[],tr:[],cat:[],us:{},sel:null,trSel:[],f:{q:'',st:'',ev:'',sm:''}};
+var STL={pendente:['Pendente','warn'],gerado:['XML gerado','warn'],transmitido:['Transmitido','warn'],recebido:['Recebido (protocolo)','warn'],processado:['Processado','ok'],rejeitado:['Rejeitado','bad'],dispensado:['Dispensado','mut'],nao_aplicavel:['Não aplicável','mut']};
+var SM={verde:['Cumprida','ok'],amarelo:['Atenção','warn'],vermelho:['Vencida','bad'],cinza:['Sem prazo/N.A.','mut']};
+var br=function(d){return d?String(d).slice(0,10).split('-').reverse().join('/'):'—'};
+var $e=function(i){return document.getElementById(i)};
+var val=function(i){var e=$e(i);return e?String(e.value).trim():''};
+var sb=function(){return window.axisSb};
+var nomeF=function(o){if(!o.funcionario_id)return 'Empregador';var f=FN0.find(function(x){return x.id==o.funcionario_id});return f?f.nome:'(funcionário removido)'};
+var evNome=function(c){var e=ES.ev.find(function(x){return x.codigo==c});return e?e.nome:c};
+var bars=function(rows){if(!rows.length)return '<div class="bars"><p class="sub">Sem dados ainda.</p></div>';var mx=Math.max.apply(null,rows.map(function(r){return r[1]}).concat([1]));
+  return '<div class="bars">'+rows.map(function(r){return '<div class="br"><span>'+E(r[0])+'</span><div class="tr"><i class="'+(r[2]||'')+'" style="width:'+Math.round(r[1]/mx*100)+'%"></i></div><b>'+r[3]+'</b></div>'}).join('')+'</div>'};
+var kpi=function(l,v,c,s){return '<div class="k '+(c||'')+'"><span>'+l+'</span><b>'+v+'</b>'+(s?'<small>'+s+'</small>':'')+'</div>'};
+function log(acao,det){try{sb().from('esocial_logs').insert({acao:acao,detalhes:det||{}})}catch(e){}}
+
+async function load(){ES.loading=true;ES.err='';
+  try{var r=await Promise.all([
+    sb().from('esocial_v_ocorrencias').select('*').order('data_limite',{ascending:true,nullsFirst:false}).limit(5000),
+    sb().from('esocial_eventos').select('*').order('codigo'),
+    sb().from('esocial_transmissoes').select('id,ocorrencia_id,resultado,em').order('em',{ascending:false}).limit(5000),
+    sb().from('esocial_categorias').select('*').order('ordem'),
+    sb().from('usuarios').select('id,nome')]);
+    for(var i=0;i<4;i++)if(r[i].error)throw r[i].error;
+    ES.oc=r[0].data||[];ES.ev=r[1].data||[];ES.tr=r[2].data||[];ES.cat=r[3].data||[];ES.us={};((r[4].data)||[]).forEach(function(u){ES.us[u.id]=u.nome});
+  }catch(e){console.error(e);ES.err=/relation|does not exist|schema cache/i.test(e.message||'')?'As tabelas do eSocial ainda não existem. Rode o axis-supabase-esocial.sql no Supabase.':'Não foi possível carregar: '+(e.message||e)}
+  ES.loading=false;ES.loaded=true;draw()}
+async function loadTr(id){var r=await sb().from('esocial_transmissoes').select('*').eq('ocorrencia_id',id).order('em',{ascending:false});ES.trSel=r.data||[];draw()}
+
+/* ---------- Painel ---------- */
+function painel(){var o=ES.oc,n=function(f){return o.filter(f).length};
+  var venc=n(function(x){return x.semaforo=='vermelho'}),prox=n(function(x){return x.semaforo=='amarelo'&&['pendente','gerado','rejeitado'].indexOf(x.status)>=0});
+  var tx=n(function(x){return['transmitido','recebido','processado'].indexOf(x.status)>=0}),proc=n(function(x){return x.status=='processado'}),
+    pend=n(function(x){return x.status=='pendente'||x.status=='gerado'}),rej=n(function(x){return x.status=='rejeitado'}),ag=n(function(x){return x.status=='transmitido'||x.status=='recebido'});
+  var h='<div class="grid">'+kpi('Eventos no catálogo',ES.ev.length)+kpi('Obrigações controladas',o.length)+kpi('Transmitidas',tx)+kpi('Processadas com sucesso',proc,'ok')+kpi('Pendentes',pend,pend?'warn':'')+kpi('Rejeitadas',rej,rej?'bad':'')+kpi('Em atraso',venc,venc?'bad':'ok')+kpi('Aguardando processamento',ag,ag?'warn':'')+'</div>';
+  var rs=[];if(venc)rs.push(venc+' com prazo vencido');if(prox)rs.push(prox+' com prazo nos próximos 5 dias');if(rej)rs.push(rej+' rejeitada'+(rej>1?'s':'')+' a corrigir');if(ag)rs.push(ag+' aguardando retorno do eSocial');
+  h+='<h3>Resumo</h3><div class="alerts"><div class="al '+(venc||rej?'bad':rs.length?'warn':'ok')+'">'+(rs.length?'Existem obrigações que pedem providência: '+rs.join('; ')+'.':(o.length?'Nenhuma pendência no momento.':'Ainda não há obrigações controladas. Use “Importar do cadastro” ou “Nova obrigação”.'))+'</div></div>';
+  var porCat={};o.filter(function(x){return['pendente','gerado','rejeitado'].indexOf(x.status)>=0}).forEach(function(x){porCat[x.categoria_id]=(porCat[x.categoria_id]||0)+1});
+  h+='<h3>Pendências por categoria</h3>'+bars(ES.cat.filter(function(c){return porCat[c.id]}).map(function(c){return[c.nome,porCat[c.id],'warn',porCat[c.id]]}));
+  var rj={};o.filter(function(x){return x.status=='rejeitado'}).forEach(function(x){rj[x.evento_codigo]=(rj[x.evento_codigo]||0)+1});
+  h+='<h3>Rejeitados por evento</h3>'+bars(Object.keys(rj).map(function(k){return[k+' · '+evNome(k),rj[k],'bad',rj[k]]}));
+  var mes=function(d){return String(d||'').slice(0,7)},ms=[],t=new Date();for(var i=5;i>=0;i--){var d=new Date(t.getFullYear(),t.getMonth()-i,1);ms.push(d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2))}
+  h+='<h3>Eventos enviados por mês</h3>'+bars(ms.map(function(m){var c=ES.tr.filter(function(x){return mes(x.em)==m&&['enviado','recebido','processado'].indexOf(x.resultado)>=0}).length;return[m.split('-').reverse().join('/'),c,'',c]}));
+  h+='<h3>Conformidade mensal (obrigações com prazo no mês)</h3>'+bars(ms.map(function(m){var l=o.filter(function(x){return mes(x.data_limite)==m&&x.status!='nao_aplicavel'&&x.status!='dispensado'}),ok=l.filter(function(x){return x.status=='processado'}).length,p=l.length?Math.round(ok/l.length*100):0;
+    return[m.split('-').reverse().join('/'),p,p>=95?'ok':p>=70?'warn':'bad',l.length?p+'% ('+ok+'/'+l.length+')':'sem obrigações']}));
+  return h}
+
+/* ---------- Obrigações ---------- */
+function filtrar(){var f=ES.f,q=f.q.toLowerCase(),qd=q.replace(/\D/g,'');
+  return ES.oc.filter(function(o){if(f.st&&o.status!=f.st)return false;if(f.ev&&o.evento_codigo!=f.ev)return false;if(f.sm&&o.semaforo!=f.sm)return false;
+    if(!q)return true;var fu=FN0.find(function(x){return x.id==o.funcionario_id})||{},ct=(window.CT0||[]).find(function(c){return c.id==fu.ctr})||{};
+    return [nomeF(o),o.empresa,fu.matricula,ct.cliente||ct.nome||'',fu.cargo].join(' ').toLowerCase().indexOf(q)>=0||(qd&&String(fu.cpf||'').replace(/\D/g,'').indexOf(qd)>=0)})}
+function sel_(id,l,o,v){return '<select id="'+id+'" aria-label="'+l+'"><option value="">'+l+'</option>'+o.map(function(x){return '<option value="'+x[0]+'"'+(x[0]==v?' selected':'')+'>'+E(x[1])+'</option>'}).join('')+'</select>'}
+function obrig(){var l=filtrar(),h='<div class="row"><input id="es_q" placeholder="Buscar nome, CPF, matrícula, empresa, posto…" value="'+E(ES.f.q)+'" style="min-width:240px">'+
+  sel_('es_st','Todos os status',Object.keys(STL).map(function(k){return[k,STL[k][0]]}),ES.f.st)+sel_('es_ev','Todos os eventos',ES.ev.map(function(e){return[e.codigo,e.codigo+' · '+e.nome]}),ES.f.ev)+
+  sel_('es_sm','Todos os prazos',Object.keys(SM).map(function(k){return[k,SM[k][0]]}),ES.f.sm)+
+  '<button class="b2" data-a="eso" data-p="imp">Importar do cadastro</button><button class="b" data-a="eso" data-p="nova">Nova obrigação</button></div>';
+  if(!l.length)return h+'<p class="sub">Nenhuma obrigação encontrada.</p>';
+  return h+'<div class="tw"><table><tr><th>Evento</th><th>Funcionário / empresa</th><th>Ocorrência</th><th>Limite</th><th>Status</th><th>Prazo</th></tr>'+l.slice(0,300).map(function(o){
+    return '<tr class="r" data-a="eso" data-p="det:'+o.id+'"><td>'+o.evento_codigo+' · '+E(o.evento_nome)+'</td><td>'+E(nomeF(o))+'<small style="display:block;color:var(--mut)">'+E(o.empresa)+'</small></td><td>'+(o.competencia?o.competencia.split('-').reverse().join('/'):br(o.data_ocorrencia))+'</td><td>'+br(o.data_limite)+'</td><td>'+TG(STL[o.status]||[o.status,'mut'])+'</td><td>'+TG(SM[o.semaforo]||['—','mut'])+'</td></tr>'}).join('')+'</table></div>'+(l.length>300?'<p class="sub">Mostrando 300 de '+l.length+'. Refine a busca.</p>':'')}
+
+/* ---------- Detalhe ---------- */
+function det(){var o=ES.oc.find(function(x){return x.id==ES.sel});if(!o)return '<p class="sub">Obrigação não encontrada.</p>';
+  var e=ES.ev.find(function(x){return x.codigo==o.evento_codigo})||{},h='<div class="crumb"><button data-a="eso" data-p="obrig">‹ Obrigações</button></div><h2>'+o.evento_codigo+' · '+E(o.evento_nome)+'</h2><p class="sub">'+E(nomeF(o))+' · '+E(o.empresa)+'</p>';
+  h+='<div class="grid">'+kpi('Status',TG(STL[o.status]||[o.status,'mut']))+kpi('Prazo',TG(SM[o.semaforo]||['—','mut']))+kpi('Data limite',br(o.data_limite),'',e.prazo_confirmado?E(e.prazo_texto||''):'Regra a confirmar: informe a data manualmente')+kpi('Ocorrência',o.competencia?o.competencia.split('-').reverse().join('/'):br(o.data_ocorrencia))+
+    kpi('Responsável',o.responsavel?E(ES.us[o.responsavel]||'Outro usuário'):'—')+'</div>';
+  if(o.motivo_rejeicao)h+='<div class="alerts" style="margin-top:10px"><div class="al bad"><b>Motivo da rejeição:</b> '+E(o.motivo_rejeicao)+'</div></div>';
+  h+='<h3>Observações</h3><div class="row"><input id="es_obs" style="flex:1;min-width:240px" value="'+E(o.observacao||'')+'"><button class="b2" data-a="eso" data-p="obs">Salvar</button><button class="b2" data-a="eso" data-p="assumir">Assumir acompanhamento</button></div>';
+  if(!o.data_limite)h+='<div class="row"><label for="es_lim">Data limite:</label><input id="es_lim" type="date"><button class="b2" data-a="eso" data-p="lim">Definir</button></div>';
+  h+='<h3>Registrar transmissão / retorno</h3><p class="sub">Use quando o envio foi feito fora do AXIS (portal do eSocial ou outro sistema). O evento só passa a “transmitido” ou “processado” com este registro.</p><div class="fm">'+
+    '<div><label for="es_amb">Ambiente</label><select id="es_amb"><option value="externo">Portal / outro sistema</option><option value="producao">Produção</option><option value="producao_restrita">Produção restrita (teste)</option></select></div>'+
+    '<div><label for="es_res">Resultado</label><select id="es_res"><option value="enviado">Enviado (aguardando)</option><option value="recebido">Recebido (protocolo)</option><option value="processado">Processado (recibo)</option><option value="rejeitado">Rejeitado</option></select></div>'+
+    '<div><label for="es_prot">Protocolo</label><input id="es_prot"></div><div><label for="es_rec">Nº do recibo</label><input id="es_rec"></div><div style="grid-column:1/-1"><label for="es_msg">Mensagem / motivo da rejeição</label><input id="es_msg"></div></div>'+
+    '<div class="row"><button class="b" data-a="eso" data-p="reg">Registrar</button><button class="b2" data-a="eso" data-p="st:gerado">Marcar XML gerado</button><button class="b2" data-a="eso" data-p="st:dispensado">Dispensar</button><button class="b2" data-a="eso" data-p="st:nao_aplicavel">Não aplicável</button><button class="b2" data-a="eso" data-p="st:pendente">Reabrir como pendente</button></div>';
+  h+='<h3>Histórico de transmissões</h3>'+(ES.trSel.length?'<div class="tw"><table><tr><th>Quando</th><th>Etapa</th><th>Ambiente</th><th>Resultado</th><th>Protocolo / recibo</th><th>Mensagem</th></tr>'+ES.trSel.map(function(t){return '<tr><td>'+br(t.em)+' '+String(t.em).slice(11,16)+'</td><td>'+t.etapa+'</td><td>'+t.ambiente+'</td><td>'+t.resultado+'</td><td>'+E([t.protocolo,t.recibo].filter(Boolean).join(' / '))+'</td><td>'+E(t.mensagem||'')+'</td></tr>'}).join('')+'</table></div>':'<p class="sub">Nenhuma transmissão registrada. Esta obrigação não conta como enviada.</p>');
+  return h}
+
+/* ---------- Nova obrigação ---------- */
+function nova(){var emps=[];FN0.forEach(function(f){if(f.emp&&emps.indexOf(f.emp)<0)emps.push(f.emp)});if(!emps.length)emps=window.EMPS||[];
+  var fs=FN0.slice().sort(function(a,b){return String(a.nome).localeCompare(b.nome)});
+  return '<div class="crumb"><button data-a="eso" data-p="obrig">‹ Obrigações</button></div><h2>Nova obrigação</h2><p class="sub">O prazo é calculado pelo evento. Para eventos “a confirmar”, informe a data limite.</p><div class="fm">'+
+  '<div><label for="eo_ev">Evento</label><select id="eo_ev">'+ES.ev.map(function(e){return '<option value="'+e.codigo+'">'+e.codigo+' · '+E(e.nome)+'</option>'}).join('')+'</select></div>'+
+  '<div><label for="eo_emp">Empresa</label><select id="eo_emp">'+emps.map(function(x){return '<option>'+E(x)+'</option>'}).join('')+'</select></div>'+
+  '<div><label for="eo_func">Funcionário (vazio = empregador)</label><select id="eo_func"><option value="">—</option>'+fs.map(function(f){return '<option value="'+f.id+'">'+E(f.nome)+'</option>'}).join('')+'</select></div>'+
+  '<div><label for="eo_comp">Competência (eventos periódicos)</label><input id="eo_comp" type="month"></div><div><label for="eo_dt">Data da ocorrência</label><input id="eo_dt" type="date"></div>'+
+  '<div><label for="eo_lim">Data limite (opcional)</label><input id="eo_lim" type="date"></div><div><label for="eo_ac">Acidente de trabalho? (S-2230)</label><select id="eo_ac"><option value="0">Não</option><option value="1">Sim</option></select></div>'+
+  '<div style="grid-column:1/-1"><label for="eo_obs">Observação</label><input id="eo_obs"></div></div><div class="row"><button class="b" data-a="eso" data-p="salvarnova">Salvar</button></div>'}
+
+/* ---------- Catálogo ---------- */
+function catalogo(){return '<div class="tw"><table><tr><th>Evento</th><th>Categoria</th><th>Periódico</th><th>Prazo</th><th>Regra</th></tr>'+ES.ev.map(function(e){var c=ES.cat.find(function(x){return x.id==e.categoria_id})||{};
+  return '<tr><td>'+e.codigo+' · '+E(e.nome)+'</td><td>'+E(c.nome||'')+'</td><td>'+(e.periodico?'Sim':'Não')+'</td><td>'+E(e.prazo_texto||'')+'</td><td>'+TG(e.prazo_confirmado?['Confirmada','ok']:['A confirmar','warn'])+'</td></tr>'}).join('')+'</table></div><p class="sub">Leiaute: '+E((ES.ev[0]||{}).versao_leiaute||'S-1.3')+'. As regras “a confirmar” não geram data automática.</p>'}
+
+/* ---------- Tela ---------- */
+V.esoc=function(){if(!PEOK())return '<h2>eSocial</h2><p class="sub">Seu perfil não tem acesso a este módulo.</p>';
+  if(!ES.loaded&&!ES.loading)load();
+  var tabs=[['painel','Painel'],['obrig','Obrigações'],['catalogo','Catálogo']],t=ES.tab,hd='<h2>eSocial · Controle e auditoria</h2><p class="sub">Controle das obrigações. O AXIS só transmite a admissão (S-2200) pelo servidor; para os demais eventos, registre o recibo manualmente. Nada é contado como enviado sem registro de transmissão.</p>';
+  hd+='<div class="row">'+tabs.map(function(x){return '<button class="'+(t==x[0]||(x[0]=='obrig'&&(t=='det'||t=='nova'))?'b':'b2')+'" data-a="eso" data-p="'+x[0]+'">'+x[1]+'</button>'}).join('')+'<button class="b2" data-a="eso" data-p="recarregar">Atualizar</button></div>';
+  if(ES.err)return hd+'<div class="alerts"><div class="al bad">'+E(ES.err)+'</div></div>';
+  if(ES.loading&&!ES.loaded)return hd+'<p class="sub">Carregando…</p>';
+  return hd+(t=='painel'?painel():t=='obrig'?obrig():t=='det'?det():t=='nova'?nova():catalogo())};
+
+/* ---------- Ações ---------- */
+function fail(e){console.error(e);CC.toast('Não foi possível salvar: '+((e&&e.message)||e),'danger')}
+async function upd(id,patch){var r=await sb().from('esocial_ocorrencias').update(patch).eq('id',id);if(r.error)throw r.error}
+async function acao(p){var o=ES.oc.find(function(x){return x.id==ES.sel});
+  try{
+  if(p=='painel'||p=='obrig'||p=='catalogo'){ES.tab=p;draw();return}
+  if(p=='recarregar'){await load();return}
+  if(p=='nova'){ES.tab='nova';draw();return}
+  if(p.indexOf('det:')==0){ES.sel=p.slice(4);ES.tab='det';ES.trSel=[];draw();loadTr(ES.sel);return}
+  if(p=='salvarnova'){var ev=ES.ev.find(function(x){return x.codigo==val('eo_ev')}),row={evento_codigo:val('eo_ev'),empresa:val('eo_emp'),funcionario_id:val('eo_func')||null,competencia:val('eo_comp')||null,data_ocorrencia:val('eo_dt')||null,data_limite:val('eo_lim')||null,acidente:val('eo_ac')=='1',observacao:val('eo_obs')||null};
+    if(!row.empresa)return CC.toast('Escolha a empresa.','danger');if(ev.periodico&&!row.competencia)return CC.toast('Este evento é periódico: informe a competência.','danger');if(!ev.periodico&&!row.data_ocorrencia)return CC.toast('Informe a data da ocorrência.','danger');
+    var r=await sb().from('esocial_ocorrencias').insert(row);if(r.error)throw r.error;log('nova_obrigacao',{evento:row.evento_codigo});CC.toast('Obrigação cadastrada.','success');ES.tab='obrig';await load();return}
+  if(p=='imp'){await importar();return}
+  if(!o)return;
+  if(p=='obs'){await upd(o.id,{observacao:val('es_obs')||null});CC.toast('Observação salva.','success')}
+  else if(p=='assumir'){var u=await sb().auth.getUser();await upd(o.id,{responsavel:u.data.user.id});CC.toast('Você agora acompanha esta obrigação.','success')}
+  else if(p=='lim'){if(!val('es_lim'))return CC.toast('Informe a data.','danger');await upd(o.id,{data_limite:val('es_lim')});CC.toast('Data limite definida.','success')}
+  else if(p.indexOf('st:')==0){var s=p.slice(3);if((s=='dispensado'||s=='nao_aplicavel')&&!val('es_obs'))return CC.toast('Escreva a justificativa no campo Observações antes de dispensar.','danger');
+    await upd(o.id,{status:s,observacao:val('es_obs')||o.observacao,motivo_rejeicao:null});log('status_'+s,{id:o.id});CC.toast('Status atualizado.','success')}
+  else if(p=='reg'){var res=val('es_res'),amb=val('es_amb'),rec=val('es_rec'),msg=val('es_msg');
+    if(res=='processado'&&!rec)return CC.toast('Para “processado”, informe o número do recibo.','danger');if(res=='rejeitado'&&!msg)return CC.toast('Para “rejeitado”, informe o motivo.','danger');
+    var t=await sb().from('esocial_transmissoes').insert({ocorrencia_id:o.id,etapa:'manual',ambiente:amb,resultado:res,protocolo:val('es_prot')||null,recibo:rec||null,mensagem:msg||null}).select('id').single();if(t.error)throw t.error;
+    if(rec){var rr=await sb().from('esocial_recibos').insert({ocorrencia_id:o.id,transmissao_id:t.data.id,nr_recibo:rec,protocolo:val('es_prot')||null,ambiente:amb,processado_em:res=='processado'?new Date().toISOString():null});if(rr.error)throw rr.error}
+    await upd(o.id,{status:{enviado:'transmitido',recebido:'recebido',processado:'processado',rejeitado:'rejeitado'}[res],motivo_rejeicao:res=='rejeitado'?msg:null});log('registro_manual',{id:o.id,res:res});CC.toast('Registro salvo.','success')}
+  await load();loadTr(o.id)}catch(e){fail(e)}}
+
+/* Importa as admissões já controladas no cadastro (func.esocial). Só vira "processado" quem tem recibo. */
+async function importar(){
+  var ja={};ES.oc.filter(function(o){return o.evento_codigo=='S-2200'}).forEach(function(o){ja[o.funcionario_id]=1});
+  var lim=new Date();lim.setDate(lim.getDate()-60);var limS=lim.toISOString().slice(0,10),novos=0,antigos=0,falhas=0;
+  for(var i=0;i<FN0.length;i++){var f=FN0[i];if(ja[f.id]||!f.dtAdm||!f.emp)continue;var es=f.esocial||{},st=es.st||'pendente';
+    if(st=='pendente'&&f.dtAdm<limS){antigos++;continue}
+    try{var amb=/teste/i.test(es.amb||'')?'producao_restrita':'producao';
+      var r=await sb().from('esocial_ocorrencias').insert({evento_codigo:'S-2200',empresa:f.emp,funcionario_id:f.id,data_ocorrencia:f.dtAdm,origem:'axis_func'}).select('id').single();if(r.error)throw r.error;
+      var id=r.data.id,novo='pendente',rs={enviado:'enviado',processado:'processado',rejeitado:'rejeitado',erro:'erro'}[st];
+      if(rs){var t=await sb().from('esocial_transmissoes').insert({ocorrencia_id:id,etapa:'envio',ambiente:amb,resultado:rs,protocolo:es.prot||null,recibo:es.rec||null,mensagem:(es.msgs||[]).join(' | ').slice(0,1000)||null,em:es.at||new Date().toISOString()}).select('id').single();if(t.error)throw t.error;
+        if(st=='processado'&&es.rec){var rc=await sb().from('esocial_recibos').insert({ocorrencia_id:id,transmissao_id:t.data.id,nr_recibo:es.rec,protocolo:es.prot||null,ambiente:amb});if(rc.error)throw rc.error;novo='processado'}
+        else if(st=='processado')novo='recebido';else if(st=='enviado')novo='transmitido';else if(st=='rejeitado')novo='rejeitado'}
+      if(novo!='pendente')await upd(id,{status:novo,motivo_rejeicao:novo=='rejeitado'?((es.msgs||[])[0]||'Rejeitada pelo eSocial'):null});
+      novos++}catch(e){console.error(e);falhas++}}
+  log('importar_cadastro',{novos:novos,antigos:antigos,falhas:falhas});
+  CC.toast(novos+' admissão(ões) importada(s)'+(antigos?'; '+antigos+' antiga(s) sem envio pelo AXIS não importada(s) — se já estão no eSocial, cadastre o recibo manualmente':'')+(falhas?'; '+falhas+' falha(s)':'')+'.',falhas?'danger':'success');
+  await load()}
+
+var ir=NV.findIndex(function(q){return q[0]=='fun'});NV.splice(ir+1,0,['esoc','eSocial']);
+document.addEventListener('click',function(e){var b=e.target.closest&&e.target.closest('[data-a="eso"]');if(b)acao(b.dataset.p)});
+document.addEventListener('input',function(e){if(e.target.id=='es_q'){ES.f.q=e.target.value;var p=e.target.selectionStart;draw();var n=$e('es_q');if(n){n.focus();n.setSelectionRange(p,p)}}});
+document.addEventListener('change',function(e){var m={es_st:'st',es_ev:'ev',es_sm:'sm'}[e.target.id];if(m){ES.f[m]=e.target.value;draw()}});
 })();
 </script>
 
