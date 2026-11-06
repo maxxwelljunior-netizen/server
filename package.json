@@ -1,9 +1,19 @@
 {
   "name": "axis-servidor-nfse",
   "version": "1.0.0",
-  "description": "Servidor de emissão de NFS-e (Emissor Nacional) do AXIS",
+  "description": "Servidor de emiss\u00e3o de NFS-e (Emissor Nacional) do AXIS",
   "main": "server.js",
-  "scripts": { "start": "node server.js" },
-  "engines": { "node": ">=18" },
-  "dependencies": { "node-forge": "^1.3.1" }
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "node-forge": "^1.3.1"
+  },
+  "optionalDependencies": {
+    "playwright": "^1.48.0",
+    "pdf-parse": "^1.1.1"
+  }
 }

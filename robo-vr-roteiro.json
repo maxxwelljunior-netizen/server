@@ -1,0 +1,63 @@
+{
+  "_ajuda": "Cada passo: a=ir|login|clicar|preencher|arquivo|esperar|ler|baixar|foto. Troque os TODO pelo que aparece no portal. final:true = o clique que realmente confirma (só roda com ROBO_CONFIRMA_FINAL=SIM). Variáveis: {{arquivo}} {{competencia}} {{credito}} {{total}} {{pedido}}.",
+  "envio": [
+    {
+      "a": "ir"
+    },
+    {
+      "a": "login"
+    },
+    {
+      "a": "foto",
+      "nome": "apos-login"
+    },
+    {
+      "a": "clicar",
+      "texto": "TODO texto do menu/botão para novo pedido ou importar arquivo"
+    },
+    {
+      "a": "arquivo",
+      "seletor": "input[type=file]",
+      "arquivo": "{{arquivo}}"
+    },
+    {
+      "a": "esperar",
+      "texto": "TODO texto que aparece quando o arquivo é validado"
+    },
+    {
+      "a": "foto",
+      "nome": "antes-de-confirmar"
+    },
+    {
+      "a": "clicar",
+      "texto": "TODO texto do botão que confirma o pedido",
+      "final": true
+    },
+    {
+      "a": "esperar",
+      "texto": "TODO texto de pedido recebido"
+    },
+    {
+      "a": "ler",
+      "regex": "TODO regex com o número do pedido (grupo 1)",
+      "como": "numeroPedido"
+    }
+  ],
+  "boleto": [
+    {
+      "a": "ir"
+    },
+    {
+      "a": "login"
+    },
+    {
+      "a": "clicar",
+      "texto": "TODO texto do menu de pedidos/boletos"
+    },
+    {
+      "a": "baixar",
+      "texto": "TODO texto do link/botão do boleto",
+      "como": "boleto"
+    }
+  ]
+}

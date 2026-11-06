@@ -143,6 +143,14 @@ async function emitir(req, corpo) {
   return { ok: true, ambiente: ambiente, numero: r.numero, chave: r.chave, dps: dps.id };
 }
 
+/* Benefícios (VR): robô do Super Portal — ver robo.js */
+const RB = require('./robo')({ E: E, VRL: require('./vrlayout') });
+async function beneficiosRota(req, url, corpo) {
+  await autorizar(req, PERFIS_RH);
+  if (url === '/beneficios/robo') return RB.rota(JSON.parse(corpo || '{}'));
+  throw { status: 404, erro: 'Rota não encontrada.' };
+}
+
 /* eSocial (admissão de funcionários) — ver esocial.js */
 const ES = require('./esocial')({ E: E, credencial: credencial });
 async function esocialRota(req, url, corpo) {
@@ -159,13 +167,13 @@ function servidor() {
     const cors = { 'Access-Control-Allow-Origin': E.ALLOWED_ORIGIN || '*', 'Access-Control-Allow-Headers': 'Content-Type, Authorization', 'Access-Control-Allow-Methods': 'POST, GET, OPTIONS' };
     const fim = (s, o) => { res.writeHead(s, Object.assign({ 'Content-Type': 'application/json' }, cors)); res.end(JSON.stringify(o)); };
     if (req.method === 'OPTIONS') return fim(204, {});
-    if (req.method === 'GET') return fim(200, { ok: true, ambiente: PRODUCAO ? 'produção' : 'teste', esocial: ES.ambiente(), certificado: certStatus() });
+    if (req.method === 'GET') return fim(200, { ok: true, ambiente: PRODUCAO ? 'produção' : 'teste', esocial: ES.ambiente(), certificado: certStatus(), robo: RB.config() });
     if (req.method !== 'POST') return fim(405, { ok: false, erro: 'Método não permitido.' });
     let t = ''; req.on('data', x => { t += x; if (t.length > 1e5) req.destroy(); });
     const rota = (req.url || '').split('?')[0];
-    req.on('end', () => (rota.indexOf('/esocial/') === 0 ? esocialRota(req, rota, t) : emitir(req, t)).then(o => fim(200, o)).catch(e => { console.error(e && e.erro || e); fim(e && e.status || 500, { ok: false, ambiente: PRODUCAO ? 'produção' : 'teste', erro: e && e.erro || 'Falha interna ao emitir a nota.' }); }));
+    req.on('end', () => (rota.indexOf('/beneficios/') === 0 ? beneficiosRota(req, rota, t) : rota.indexOf('/esocial/') === 0 ? esocialRota(req, rota, t) : emitir(req, t)).then(o => fim(200, o)).catch(e => { console.error(e && e.erro || e); fim(e && e.status || 500, { ok: false, ambiente: PRODUCAO ? 'produção' : 'teste', erro: e && e.erro || 'Falha interna ao emitir a nota.' }); }));
   });
 }
 
 module.exports = { montarDPS, assinar, interpretar, ES };
-if (require.main === module) servidor().listen(E.PORT || 3000, () => console.log('AXIS NFS-e: ambiente ' + (PRODUCAO ? 'PRODUÇÃO' : 'teste (produção restrita)')));
+if (require.main === module) servidor().listen(E.PORT || 3000, () => { console.log('AXIS NFS-e: ambiente ' + (PRODUCAO ? 'PRODUÇÃO' : 'teste (produção restrita)')); RB.iniciar(); });

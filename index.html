@@ -880,7 +880,7 @@ var NVB=[['bhome','Visão geral'],['bcont','Demonstrativos de contratos'],['brec
 var NV=[['dash','Cockpit executivo'],['resumo','Resumo p/ diretoria'],['cont','Contratos'],['lic','Licitações','Comercial'],['crm','CRM · contratos privados','Comercial'],['doc','Documentos','Comercial'],['rec','Contas a receber','Financeiro'],['nf','Notas fiscais','Financeiro'],['pag','Contas a pagar','Financeiro'],['op','Operacional'],['jur','Jurídico'],['al','Alertas'],['cf','Configurações']],V={bhome:bhome,bcont:bcont,brec:brec,blic:blic,bjur:bjur,resumo:resumo,crm:()=>gl('crm'),crmf:()=>gf('crm'),nf:()=>gl('nf'),nff:()=>gf('nf'),rec:()=>gl('rec'),recf:()=>gf('rec'),pag:()=>gl('pag'),pagf:()=>gf('pag'),jur:jur,jform:jform,doc:docs,dform:dform,lic:lic,bform:bform,dash:dash,cont:cont,form:form,det:det,op:op,al:al,cf:cf};
 function draw(){var board=BOARD();
 if(board&&NVB.every(x=>x[0]!=view))view='bhome';
-$('nv').innerHTML=board?NVB.map(x=>'<button data-a="go" data-p="'+x[0]+'" class="'+(view==x[0]?'on':'')+'">'+x[1]+'</button>').join(''):(function(){var g='',o='';NV.forEach(function(x){if(x[0]=='jur'&&!JOK())return;if((x[0]=='fun'||x[0]=='esoc')&&!PEOK())return;if(x[2]=='Financeiro'&&!FOK())return;if(x[2]!=g){g=x[2]||'';if(g)o+='<div class="ng">'+g+'</div>'}var on=view==x[0]||view==x[0]+'f'||(x[0]=='fun'&&view=='fund')||(x[0]=='cont'&&(view=='det'||view=='form'))||(x[0]=='lic'&&view=='bform')||(x[0]=='doc'&&view=='dform')||(x[0]=='jur'&&view=='jform');o+='<button data-a="go" data-p="'+x[0]+'" class="'+(on?'on ':'')+(x[2]?'sub2':'')+'">'+x[1]+'</button>'});return o})();
+$('nv').innerHTML=board?NVB.map(x=>'<button data-a="go" data-p="'+x[0]+'" class="'+(view==x[0]?'on':'')+'">'+x[1]+'</button>').join(''):(function(){var g='',o='';NV.forEach(function(x){if(x[0]=='jur'&&!JOK())return;if((x[0]=='fun'||x[0]=='esoc'||x[0]=='ben')&&!PEOK())return;if(x[2]=='Financeiro'&&!FOK())return;if(x[2]!=g){g=x[2]||'';if(g)o+='<div class="ng">'+g+'</div>'}var on=view==x[0]||view==x[0]+'f'||(x[0]=='fun'&&view=='fund')||(x[0]=='cont'&&(view=='det'||view=='form'))||(x[0]=='lic'&&view=='bform')||(x[0]=='doc'&&view=='dform')||(x[0]=='jur'&&view=='jform');o+='<button data-a="go" data-p="'+x[0]+'" class="'+(on?'on ':'')+(x[2]?'sub2':'')+'">'+x[1]+'</button>'});return o})();
 $('mn').innerHTML=db||!ok?V[view]():'<p class="sub">Não foi possível conectar ao banco de dados. Faça login novamente ou recarregue a página.</p>'}
 function refresh(){if(view=='jform'||view=='funf'||VK[view])return;var a=document.activeElement;if(a&&a.tagName=='INPUT'&&$('mn').contains(a))return;draw()}
 function er(t){var e=$('er');if(e)e.textContent=t}
@@ -1546,7 +1546,7 @@ svg text.cell{fill:#fff;font-size:11px;font-weight:600;pointer-events:none}
 })();
 /* ===== AXIS · Módulo eSocial (Etapas 3 e 4): painel, obrigações e catálogo ===== */
 ;(function(){
-var ES={tab:'painel',loaded:false,loading:false,err:'',oc:[],ev:[],tr:[],cat:[],us:{},sel:null,trSel:[],f:{q:'',st:'',ev:'',sm:''}};
+var ES={tab:'painel',loaded:false,loading:false,err:'',oc:[],ev:[],tr:[],cat:[],us:{},sel:null,trSel:[],f:{q:'',st:'',ev:'',sm:''},fq:'',fsel:null,ftr:[],frc:[],pre:null,back:''};
 var STL={pendente:['Pendente','warn'],gerado:['XML gerado','warn'],transmitido:['Transmitido','warn'],recebido:['Recebido (protocolo)','warn'],processado:['Processado','ok'],rejeitado:['Rejeitado','bad'],dispensado:['Dispensado','mut'],nao_aplicavel:['Não aplicável','mut']};
 var SM={verde:['Cumprida','ok'],amarelo:['Atenção','warn'],vermelho:['Vencida','bad'],cinza:['Sem prazo/N.A.','mut']};
 var br=function(d){return d?String(d).slice(0,10).split('-').reverse().join('/'):'—'};
@@ -1607,7 +1607,7 @@ function obrig(){var l=filtrar(),h='<div class="row"><input id="es_q" placeholde
 
 /* ---------- Detalhe ---------- */
 function det(){var o=ES.oc.find(function(x){return x.id==ES.sel});if(!o)return '<p class="sub">Obrigação não encontrada.</p>';
-  var e=ES.ev.find(function(x){return x.codigo==o.evento_codigo})||{},h='<div class="crumb"><button data-a="eso" data-p="obrig">‹ Obrigações</button></div><h2>'+o.evento_codigo+' · '+E(o.evento_nome)+'</h2><p class="sub">'+E(nomeF(o))+' · '+E(o.empresa)+'</p>';
+  var e=ES.ev.find(function(x){return x.codigo==o.evento_codigo})||{},h='<div class="crumb"><button data-a="eso" data-p="'+(ES.back||'obrig')+'">‹ '+(ES.back=='fdet'?'Funcionário':'Obrigações')+'</button></div><h2>'+o.evento_codigo+' · '+E(o.evento_nome)+'</h2><p class="sub">'+E(nomeF(o))+' · '+E(o.empresa)+'</p>';
   h+='<div class="grid">'+kpi('Status',TG(STL[o.status]||[o.status,'mut']))+kpi('Prazo',TG(SM[o.semaforo]||['—','mut']))+kpi('Data limite',br(o.data_limite),'',e.prazo_confirmado?E(e.prazo_texto||''):'Regra a confirmar: informe a data manualmente')+kpi('Ocorrência',o.competencia?o.competencia.split('-').reverse().join('/'):br(o.data_ocorrencia))+
     kpi('Responsável',o.responsavel?E(ES.us[o.responsavel]||'Outro usuário'):'—')+'</div>';
   if(o.motivo_rejeicao)h+='<div class="alerts" style="margin-top:10px"><div class="al bad"><b>Motivo da rejeição:</b> '+E(o.motivo_rejeicao)+'</div></div>';
@@ -1626,11 +1626,41 @@ function nova(){var emps=[];FN0.forEach(function(f){if(f.emp&&emps.indexOf(f.emp
   var fs=FN0.slice().sort(function(a,b){return String(a.nome).localeCompare(b.nome)});
   return '<div class="crumb"><button data-a="eso" data-p="obrig">‹ Obrigações</button></div><h2>Nova obrigação</h2><p class="sub">O prazo é calculado pelo evento. Para eventos “a confirmar”, informe a data limite.</p><div class="fm">'+
   '<div><label for="eo_ev">Evento</label><select id="eo_ev">'+ES.ev.map(function(e){return '<option value="'+e.codigo+'">'+e.codigo+' · '+E(e.nome)+'</option>'}).join('')+'</select></div>'+
-  '<div><label for="eo_emp">Empresa</label><select id="eo_emp">'+emps.map(function(x){return '<option>'+E(x)+'</option>'}).join('')+'</select></div>'+
-  '<div><label for="eo_func">Funcionário (vazio = empregador)</label><select id="eo_func"><option value="">—</option>'+fs.map(function(f){return '<option value="'+f.id+'">'+E(f.nome)+'</option>'}).join('')+'</select></div>'+
+  '<div><label for="eo_emp">Empresa</label><select id="eo_emp">'+emps.map(function(x){return '<option'+(ES.pre&&ES.pre.emp==x?' selected':'')+'>'+E(x)+'</option>'}).join('')+'</select></div>'+
+  '<div><label for="eo_func">Funcionário (vazio = empregador)</label><select id="eo_func"><option value="">—</option>'+fs.map(function(f){return '<option value="'+f.id+'"'+(ES.pre&&ES.pre.func==f.id?' selected':'')+'>'+E(f.nome)+'</option>'}).join('')+'</select></div>'+
   '<div><label for="eo_comp">Competência (eventos periódicos)</label><input id="eo_comp" type="month"></div><div><label for="eo_dt">Data da ocorrência</label><input id="eo_dt" type="date"></div>'+
   '<div><label for="eo_lim">Data limite (opcional)</label><input id="eo_lim" type="date"></div><div><label for="eo_ac">Acidente de trabalho? (S-2230)</label><select id="eo_ac"><option value="0">Não</option><option value="1">Sim</option></select></div>'+
   '<div style="grid-column:1/-1"><label for="eo_obs">Observação</label><input id="eo_obs"></div></div><div class="row"><button class="b" data-a="eso" data-p="salvarnova">Salvar</button></div>'}
+
+
+/* ---------- Por funcionário (Etapa 5) ---------- */
+var ctNome=function(f){var c=(window.CT0||[]).find(function(x){return x.id==f.ctr});return c?(c.cliente||c.nome||''):''};
+var enviadoEm=function(oid){var t=ES.ftr.filter(function(x){return x.ocorrencia_id==oid&&['enviado','recebido','processado'].indexOf(x.resultado)>=0});return t.length?t[0].em:null};
+function listaF(){var q=ES.fq.toLowerCase(),qd=q.replace(/\D/g,''),g={};
+  ES.oc.forEach(function(o){if(!o.funcionario_id)return;var x=g[o.funcionario_id]||(g[o.funcionario_id]={n:0,ab:0,v:0});x.n++;if(['pendente','gerado','rejeitado'].indexOf(o.status)>=0)x.ab++;if(o.semaforo=='vermelho')x.v++});
+  var l=FN0.filter(function(f){if(!q)return true;return [f.nome,f.matricula,f.emp,f.cargo,f.depto,f.setor,ctNome(f)].join(' ').toLowerCase().indexOf(q)>=0||(qd&&String(f.cpf||'').replace(/\D/g,'').indexOf(qd)>=0)})
+    .sort(function(a,b){var A=g[a.id]||{v:0},B=g[b.id]||{v:0};return B.v-A.v||String(a.nome).localeCompare(b.nome)});
+  var h='<div class="row"><input id="es_fq" placeholder="Buscar nome, CPF, matrícula, empresa, posto, departamento…" value="'+E(ES.fq)+'" style="min-width:300px;flex:1"></div>';
+  if(!l.length)return h+'<p class="sub">Nenhum funcionário encontrado.</p>';
+  return h+'<div class="tw"><table><tr><th>Funcionário</th><th>Empresa / posto</th><th>Obrigações</th><th>Em aberto</th><th>Vencidas</th></tr>'+l.slice(0,200).map(function(f){var x=g[f.id]||{n:0,ab:0,v:0};
+    return '<tr class="r" data-a="eso" data-p="fdet:'+f.id+'"><td>'+E(f.nome)+'<small style="display:block;color:var(--mut)">'+E(f.cargo||'')+(f.matricula?' · mat. '+E(f.matricula):'')+'</small></td><td>'+E(f.emp||'')+'<small style="display:block;color:var(--mut)">'+E(ctNome(f))+'</small></td><td>'+x.n+'</td><td>'+(x.ab?TG([x.ab,'warn']):'0')+'</td><td>'+(x.v?TG([x.v,'bad']):'0')+'</td></tr>'}).join('')+'</table></div>'+(l.length>200?'<p class="sub">Mostrando 200 de '+l.length+'. Refine a busca.</p>':'')}
+function linha(){var f=FN0.find(function(x){return x.id==ES.fsel});if(!f)return '<p class="sub">Funcionário não encontrado.</p>';
+  var l=ES.oc.filter(function(o){return o.funcionario_id==f.id}).sort(function(a,b){return String(b.data_ocorrencia||b.competencia||'').localeCompare(String(a.data_ocorrencia||a.competencia||''))});
+  var tem=function(c){return l.some(function(o){return o.evento_codigo==c})};
+  var h='<div class="crumb"><button data-a="eso" data-p="func">‹ Funcionários</button></div><h2>'+E(f.nome)+'</h2><p class="sub">'+E([f.cargo,f.matricula?'matrícula '+f.matricula:'',f.emp,ctNome(f),f.dtAdm?'admissão '+br(f.dtAdm):'',f.dtDesl?'desligamento '+br(f.dtDesl):''].filter(Boolean).join(' · '))+'</p>';
+  var gaps=[];if(f.dtAdm&&!tem('S-2200'))gaps.push(['S-2200','Admissão sem obrigação cadastrada']);if(f.dtDesl&&!tem('S-2299'))gaps.push(['S-2299','Desligamento sem obrigação cadastrada']);
+  if(gaps.length)h+='<div class="alerts">'+gaps.map(function(g){return '<div class="al warn">'+g[1]+' ('+g[0]+'). <button class="b2" data-a="eso" data-p="mk:'+g[0]+'">Cadastrar como pendente</button> <small>Se já foi enviada fora do AXIS, cadastre e registre o recibo.</small></div>'}).join('')+'</div>';
+  h+='<div class="row"><button class="b" data-a="eso" data-p="novaf">Nova obrigação deste funcionário</button></div><h3>Linha do tempo</h3>';
+  if(!l.length)return h+'<p class="sub">Nenhuma obrigação registrada para este funcionário.</p>';
+  return h+'<div class="alerts">'+l.map(function(o){var rc=ES.frc.find(function(r){return r.ocorrencia_id==o.id}),env=enviadoEm(o.id),cls={verde:'ok',amarelo:'warn',vermelho:'bad'}[o.semaforo]||'';
+    return '<div class="al '+cls+'"><b>'+o.evento_codigo+' · '+E(o.evento_nome)+'</b> '+TG(STL[o.status]||[o.status,'mut'])+' '+TG(SM[o.semaforo]||['—','mut'])+
+      '<div class="sub" style="margin:4px 0 0">'+(o.competencia?'Competência '+o.competencia.split('-').reverse().join('/'):'Ocorrência '+br(o.data_ocorrencia))+' · Limite '+br(o.data_limite)+' · Enviado em '+(env?br(env):'—')+
+      (rc?' · Recibo '+E(rc.nr_recibo):'')+(rc&&rc.protocolo?' · Protocolo '+E(rc.protocolo):'')+(o.responsavel?' · Resp.: '+E(ES.us[o.responsavel]||'outro usuário'):'')+'</div>'+
+      (o.motivo_rejeicao?'<div style="margin-top:4px;color:var(--bad)">Rejeição: '+E(o.motivo_rejeicao)+'</div>':'')+(o.observacao?'<div class="sub" style="margin:4px 0 0">Obs.: '+E(o.observacao)+'</div>':'')+
+      '<div style="margin-top:6px"><button class="b2" data-a="eso" data-p="det:'+o.id+'">Abrir</button></div></div>'}).join('')+'</div>'}
+async function loadF(fid){var ids=ES.oc.filter(function(o){return o.funcionario_id==fid}).map(function(o){return o.id});ES.ftr=[];ES.frc=[];if(!ids.length){draw();return}
+  var r=await Promise.all([sb().from('esocial_transmissoes').select('*').in('ocorrencia_id',ids).order('em'),sb().from('esocial_recibos').select('*').in('ocorrencia_id',ids)]);
+  ES.ftr=r[0].data||[];ES.frc=r[1].data||[];draw()}
 
 /* ---------- Catálogo ---------- */
 function catalogo(){return '<div class="tw"><table><tr><th>Evento</th><th>Categoria</th><th>Periódico</th><th>Prazo</th><th>Regra</th></tr>'+ES.ev.map(function(e){var c=ES.cat.find(function(x){return x.id==e.categoria_id})||{};
@@ -1639,24 +1669,30 @@ function catalogo(){return '<div class="tw"><table><tr><th>Evento</th><th>Catego
 /* ---------- Tela ---------- */
 V.esoc=function(){if(!PEOK())return '<h2>eSocial</h2><p class="sub">Seu perfil não tem acesso a este módulo.</p>';
   if(!ES.loaded&&!ES.loading)load();
-  var tabs=[['painel','Painel'],['obrig','Obrigações'],['catalogo','Catálogo']],t=ES.tab,hd='<h2>eSocial · Controle e auditoria</h2><p class="sub">Controle das obrigações. O AXIS só transmite a admissão (S-2200) pelo servidor; para os demais eventos, registre o recibo manualmente. Nada é contado como enviado sem registro de transmissão.</p>';
-  hd+='<div class="row">'+tabs.map(function(x){return '<button class="'+(t==x[0]||(x[0]=='obrig'&&(t=='det'||t=='nova'))?'b':'b2')+'" data-a="eso" data-p="'+x[0]+'">'+x[1]+'</button>'}).join('')+'<button class="b2" data-a="eso" data-p="recarregar">Atualizar</button></div>';
+  var tabs=[['painel','Painel'],['func','Por funcionário'],['obrig','Obrigações'],['catalogo','Catálogo']],t=ES.tab,hd='<h2>eSocial · Controle e auditoria</h2><p class="sub">Controle das obrigações. O AXIS só transmite a admissão (S-2200) pelo servidor; para os demais eventos, registre o recibo manualmente. Nada é contado como enviado sem registro de transmissão.</p>';
+  hd+='<div class="row">'+tabs.map(function(x){return '<button class="'+(t==x[0]||(x[0]=='obrig'&&(t=='det'||t=='nova'))||(x[0]=='func'&&t=='fdet')?'b':'b2')+'" data-a="eso" data-p="'+x[0]+'">'+x[1]+'</button>'}).join('')+'<button class="b2" data-a="eso" data-p="recarregar">Atualizar</button></div>';
   if(ES.err)return hd+'<div class="alerts"><div class="al bad">'+E(ES.err)+'</div></div>';
   if(ES.loading&&!ES.loaded)return hd+'<p class="sub">Carregando…</p>';
-  return hd+(t=='painel'?painel():t=='obrig'?obrig():t=='det'?det():t=='nova'?nova():catalogo())};
+  return hd+(t=='painel'?painel():t=='obrig'?obrig():t=='func'?listaF():t=='fdet'?linha():t=='det'?det():t=='nova'?nova():catalogo())};
 
 /* ---------- Ações ---------- */
 function fail(e){console.error(e);CC.toast('Não foi possível salvar: '+((e&&e.message)||e),'danger')}
 async function upd(id,patch){var r=await sb().from('esocial_ocorrencias').update(patch).eq('id',id);if(r.error)throw r.error}
 async function acao(p){var o=ES.oc.find(function(x){return x.id==ES.sel});
   try{
-  if(p=='painel'||p=='obrig'||p=='catalogo'){ES.tab=p;draw();return}
+  if(p!='novaf')ES.pre=null;
+  if(p.indexOf('det:')!=0)ES.back=ES.tab=='fdet'&&p=='obrig'?'':ES.back;
+  if(p=='painel'||p=='obrig'||p=='catalogo'||p=='func'){ES.tab=p;ES.back='';draw();return}
+  if(p.indexOf('fdet:')==0||p=='fdet'){if(p!='fdet')ES.fsel=p.slice(5);ES.tab='fdet';ES.back='';draw();loadF(ES.fsel);return}
+  if(p=='novaf'){var ff=FN0.find(function(x){return x.id==ES.fsel})||{};ES.pre={func:ES.fsel,emp:ff.emp};ES.tab='nova';draw();return}
+  if(p.indexOf('mk:')==0){var ff2=FN0.find(function(x){return x.id==ES.fsel}),cod=p.slice(3),dt=cod=='S-2299'?ff2.dtDesl:ff2.dtAdm;if(!ff2||!dt||!ff2.emp)return CC.toast('Faltam empresa ou data no cadastro do funcionário.','danger');
+    var rk=await sb().from('esocial_ocorrencias').insert({evento_codigo:cod,empresa:ff2.emp,funcionario_id:ff2.id,data_ocorrencia:dt,origem:'axis_func'});if(rk.error)throw rk.error;log('cadastrar_pendente',{evento:cod,func:ff2.id});CC.toast('Obrigação cadastrada como pendente.','success');await load();loadF(ES.fsel);return}
   if(p=='recarregar'){await load();return}
   if(p=='nova'){ES.tab='nova';draw();return}
-  if(p.indexOf('det:')==0){ES.sel=p.slice(4);ES.tab='det';ES.trSel=[];draw();loadTr(ES.sel);return}
+  if(p.indexOf('det:')==0){ES.back=ES.tab=='fdet'?'fdet':(ES.tab=='det'?ES.back:'');ES.sel=p.slice(4);ES.tab='det';ES.trSel=[];draw();loadTr(ES.sel);return}
   if(p=='salvarnova'){var ev=ES.ev.find(function(x){return x.codigo==val('eo_ev')}),row={evento_codigo:val('eo_ev'),empresa:val('eo_emp'),funcionario_id:val('eo_func')||null,competencia:val('eo_comp')||null,data_ocorrencia:val('eo_dt')||null,data_limite:val('eo_lim')||null,acidente:val('eo_ac')=='1',observacao:val('eo_obs')||null};
     if(!row.empresa)return CC.toast('Escolha a empresa.','danger');if(ev.periodico&&!row.competencia)return CC.toast('Este evento é periódico: informe a competência.','danger');if(!ev.periodico&&!row.data_ocorrencia)return CC.toast('Informe a data da ocorrência.','danger');
-    var r=await sb().from('esocial_ocorrencias').insert(row);if(r.error)throw r.error;log('nova_obrigacao',{evento:row.evento_codigo});CC.toast('Obrigação cadastrada.','success');ES.tab='obrig';await load();return}
+    var r=await sb().from('esocial_ocorrencias').insert(row);if(r.error)throw r.error;log('nova_obrigacao',{evento:row.evento_codigo});CC.toast('Obrigação cadastrada.','success');ES.tab=ES.fsel&&row.funcionario_id==ES.fsel?'fdet':'obrig';await load();if(ES.tab=='fdet')loadF(ES.fsel);return}
   if(p=='imp'){await importar();return}
   if(!o)return;
   if(p=='obs'){await upd(o.id,{observacao:val('es_obs')||null});CC.toast('Observação salva.','success')}
@@ -1669,7 +1705,7 @@ async function acao(p){var o=ES.oc.find(function(x){return x.id==ES.sel});
     var t=await sb().from('esocial_transmissoes').insert({ocorrencia_id:o.id,etapa:'manual',ambiente:amb,resultado:res,protocolo:val('es_prot')||null,recibo:rec||null,mensagem:msg||null}).select('id').single();if(t.error)throw t.error;
     if(rec){var rr=await sb().from('esocial_recibos').insert({ocorrencia_id:o.id,transmissao_id:t.data.id,nr_recibo:rec,protocolo:val('es_prot')||null,ambiente:amb,processado_em:res=='processado'?new Date().toISOString():null});if(rr.error)throw rr.error}
     await upd(o.id,{status:{enviado:'transmitido',recebido:'recebido',processado:'processado',rejeitado:'rejeitado'}[res],motivo_rejeicao:res=='rejeitado'?msg:null});log('registro_manual',{id:o.id,res:res});CC.toast('Registro salvo.','success')}
-  await load();loadTr(o.id)}catch(e){fail(e)}}
+  await load();loadTr(o.id);if(ES.fsel)loadF(ES.fsel)}catch(e){fail(e)}}
 
 /* Importa as admissões já controladas no cadastro (func.esocial). Só vira "processado" quem tem recibo. */
 async function importar(){
@@ -1691,8 +1727,188 @@ async function importar(){
 
 var ir=NV.findIndex(function(q){return q[0]=='fun'});NV.splice(ir+1,0,['esoc','eSocial']);
 document.addEventListener('click',function(e){var b=e.target.closest&&e.target.closest('[data-a="eso"]');if(b)acao(b.dataset.p)});
-document.addEventListener('input',function(e){if(e.target.id=='es_q'){ES.f.q=e.target.value;var p=e.target.selectionStart;draw();var n=$e('es_q');if(n){n.focus();n.setSelectionRange(p,p)}}});
+document.addEventListener('input',function(e){var iq=e.target.id;if(iq=='es_q'||iq=='es_fq'){if(iq=='es_q')ES.f.q=e.target.value;else ES.fq=e.target.value;var p=e.target.selectionStart;draw();var n=$e(iq);if(n){n.focus();n.setSelectionRange(p,p)}}});
 document.addEventListener('change',function(e){var m={es_st:'st',es_ev:'ev',es_sm:'sm'}[e.target.id];if(m){ES.f[m]=e.target.value;draw()}});
+})();
+/* Layout posicional (350 colunas) do arquivo de pedido do Super Portal VR — conferido contra um arquivo real (ArquivoGerado.txt). */
+var VRL=(function(){
+var W=350;
+function limpa(s){return String(s==null?'':s).normalize('NFD').replace(/[\u0300-\u036f]/g,'').toUpperCase().replace(/[^A-Z0-9 ]/g,' ').replace(/\s+/g,' ').trim()}
+function txt(s,n){s=limpa(s);return (s+' '.repeat(n)).slice(0,n)}
+function num(v,n){var d=String(v==null?'':v).replace(/\D/g,'');if(d.length>n)throw new Error('Número maior que o campo ('+n+'): '+v);return ('0'.repeat(n)+d).slice(-n)}
+function sp(n){return ' '.repeat(n)}
+function lin(corpo,seq){corpo=corpo+sp(W-9-corpo.length);if(corpo.length!=W-9)throw new Error('Linha '+seq+' com '+corpo.length+' colunas');return corpo+num(seq,9)}
+var DEF={versao:'011',codLocal:'000000000000000000001',codBenef:'000000000001',nomeBenef:'BENEFICIOS',produto:'FXM',tpLogr:'RUA',cargaFim:'00'};
+/* cfg: cnpj, razao, fantasia, tpLogr, logradouro, numero, compl, bairro, cidade, uf, cep, responsavel (+ campos de DEF)
+   itens: [{cpf, nome, nasc:'AAAA-MM-DD'|'DDMMAAAA', sexo:'M'|'F'|'', valor: reais}]   dtCredito: 'AAAA-MM-DD' */
+function gerar(cfg,itens,dtCredito){
+  var c=Object.assign({},DEF,cfg),cnpj=num(c.cnpj,14),L=[],s=0,add=function(b){L.push(lin(b,++s))};
+  add('00'+txt(c.versao,3).replace(/ /g,'0')+cnpj+txt(c.razao,322));
+  add('10'+cnpj+c.codLocal+sp(9)+txt(c.fantasia||c.razao,80)+txt(c.tpLogr,20)+txt(c.logradouro,40)+num(c.numero||'0',6)+txt(c.compl,20)+txt(c.bairro,30)+txt(c.cidade,30)+txt(c.uf,2)+num(c.cep,8)+txt(c.responsavel,59));
+  add('11'+cnpj+c.codLocal+sp(9)+cnpj+txt(c.fantasiaCurta||c.razao,281));
+  add('20'+cnpj+c.codBenef+txt(c.nomeBenef,313));
+  itens.forEach(function(i){var n=txt(i.nome,40),nasc=/^\d{4}-\d{2}-\d{2}$/.test(i.nasc||'')?i.nasc.split('-').reverse().join(''):String(i.nasc||'').replace(/\D/g,'');
+    if(nasc.length!=8)throw new Error('Data de nascimento inválida: '+i.nome);
+    add('30'+cnpj+num(i.cpf,11)+c.codLocal+sp(9)+c.codBenef+sp(10)+n.trim().padEnd(40)+txt(n,24)+nasc+(i.sexo=='M'||i.sexo=='F'?i.sexo:' ')+c.cargaFim)});
+  var d=String(dtCredito||'');if(/^\d{4}-\d{2}-\d{2}$/.test(d))d=d.split('-').reverse().join('');if(d.length!=8)throw new Error('Data de crédito inválida.');
+  add('50'+cnpj+c.produto+d);
+  itens.forEach(function(i){add('60'+cnpj+c.produto+num(i.cpf,11)+sp(40)+num(Math.round(i.valor*100),11))});
+  add('99'+cnpj);
+  return L.join('\r\n')+'\r\n'}
+/* lê um arquivo no mesmo layout (para conferência e para importar o modelo) */
+function ler(t){var L=t.split(/\r?\n/).filter(Boolean),f=function(l,a,b){return l.slice(a-1,b)},o={cfg:{},itens:[],dtCredito:''};
+  L.forEach(function(l){var t2=l.slice(0,2);
+    if(t2=='00'){o.cfg.versao=f(l,3,5);o.cfg.cnpj=f(l,6,19);o.cfg.razao=f(l,20,341).trim()}
+    if(t2=='10'){o.cfg.codLocal=f(l,17,37);o.cfg.fantasia=f(l,47,126).trim();o.cfg.tpLogr=f(l,127,146).trim();o.cfg.logradouro=f(l,147,186).trim();o.cfg.numero=f(l,187,192);o.cfg.compl=f(l,193,212).trim();o.cfg.bairro=f(l,213,242).trim();o.cfg.cidade=f(l,243,272).trim();o.cfg.uf=f(l,273,274);o.cfg.cep=f(l,275,282);o.cfg.responsavel=f(l,283,341).trim()}
+    if(t2=='11')o.cfg.fantasiaCurta=f(l,61,341).trim();
+    if(t2=='20'){o.cfg.codBenef=f(l,17,28);o.cfg.nomeBenef=f(l,29,341).trim()}
+    if(t2=='30')o.itens.push({cpf:f(l,17,27),nome:f(l,80,119).trim(),nasc:f(l,144,151),sexo:f(l,152,152).trim(),valor:0});
+    if(t2=='50'){o.cfg.produto=f(l,17,19);o.dtCredito=f(l,20,27)}
+    if(t2=='60'){var i=o.itens.find(function(x){return x.cpf==f(l,20,30)});if(i)i.valor=parseInt(f(l,71,81),10)/100}});
+  return o}
+return {gerar:gerar,ler:ler,limpa:limpa,DEF:DEF}})();
+
+/* ===== AXIS · Módulo Benefícios (VR): cálculo, pedido, arquivo do Super Portal VR e boleto no Contas a pagar ===== */
+;(function(){
+var BEN={},BP=[],BC={},S={tab:'ped',sel:null,q:'',novo:false};
+var $e=function(i){return document.getElementById(i)},val=function(i){var e=$e(i);return e?String(e.value).trim():''};
+var $$=function(n){return Number(n||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'})},dt=function(d){return d?String(d).slice(0,10).split('-').reverse().join('/'):'—'};
+var ST={rascunho:['Rascunho','warn'],aprovado:['Aprovado','warn'],enviado:['Enviado ao portal','warn'],boleto:['Boleto lançado','ok'],cancelado:['Cancelado','mut']};
+var ESC=[['5x2','5x2 (seg a sex)'],['6x1','6x1 (seg a sáb)'],['12x36','12x36'],['fixo','Dias fixos no mês']];
+var quem=function(){var u=window.AXIS_USER||{};return u.nome||u.email||''};
+function cpfOk(c){c=String(c||'').replace(/\D/g,'');if(c.length!=11||/^(\d)\1+$/.test(c))return false;for(var t=9;t<11;t++){var s=0;for(var i=0;i<t;i++)s+=c[i]*(t+1-i);if((s*10)%11%10!=c[t])return false}return true}
+var iso=function(d){return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2)};
+function feriados(y){var s={},f=['01-01','04-21','05-01','09-07','10-12','11-02','11-15','11-20','12-25'];f.forEach(function(x){s[y+'-'+x]=1});
+  var a=y%19,b=Math.floor(y/100),c=y%100,d=Math.floor(b/4),e=b%4,g=Math.floor((8*b+13)/25),h=(19*a+b-d-g+15)%30,i=Math.floor(c/4),k=c%4,l=(32+2*e+2*i-h-k)%7,m=Math.floor((a+11*h+22*l)/451),mes=Math.floor((h+l-7*m+114)/31),dia=(h+l-7*m+114)%31+1;
+  var p=new Date(y,mes-1,dia);p.setDate(p.getDate()-2);s[iso(p)]=1;return s}
+/* dias a creditar no período [ini,fim] conforme a escala */
+function dias(esc,ini,fim,fixo,fer,diasMes){var n=0,F=fer?feriados(ini.getFullYear()):{};
+  for(var d=new Date(ini);d<=fim;d.setDate(d.getDate()+1)){var w=d.getDay(),f=F[iso(d)];
+    if(esc=='5x2'){if(w>0&&w<6&&!f)n++}else if(esc=='6x1'){if(w>0&&!f)n++}else n++}
+  var tot=Math.round((fim-ini)/864e5)+1;
+  if(esc=='12x36')return Math.ceil(n/2);if(esc=='fixo')return tot>=diasMes?+fixo||0:Math.round((+fixo||0)*tot/diasMes);return n}
+function ativoNoMes(f,comp){var a=comp+'-01',z=comp+'-31';return f.dtAdm&&f.dtAdm<=z&&(!f.dtDesl||f.dtDesl>=a)}
+function calcular(comp,fer){var y=+comp.slice(0,4),m=+comp.slice(5,7),p=new Date(y,m-1,1),u=new Date(y,m,0),dm=u.getDate(),out=[],semRegra=0;
+  FN0.forEach(function(f){if(!ativoNoMes(f,comp))return;var r=BEN[f.id];if(!r){semRegra++;return}if(r.ativo===false)return;
+    var ini=new Date(Math.max(p,new Date(f.dtAdm+'T12:00:00'))),fim=f.dtDesl?new Date(Math.min(u,new Date(f.dtDesl+'T12:00:00'))):u;ini.setHours(0,0,0,0);fim.setHours(0,0,0,0);
+    var n=dias(r.escala||'5x2',ini,fim,r.diasFixos,fer,dm),v=+r.valorDia||0;
+    out.push({func:f.id,cpf:String(f.cpf||'').replace(/\D/g,''),nome:f.nome,nasc:f.dtNasc||'',sexo:f.sexo||'',ctr:f.ctr||'',emp:f.emp||'',dias:n,ajuste:0,valorDia:v,valor:Math.round(n*v*100)/100})});
+  out.sort(function(a,b){return a.nome.localeCompare(b.nome)});return {itens:out,semRegra:semRegra}}
+var total=function(it){return Math.round(it.reduce(function(s,i){return s+i.valor},0)*100)/100};
+function problemas(p){var l=[],vis={};(p.itens||[]).forEach(function(i){if(!cpfOk(i.cpf))l.push(i.nome+': CPF inválido ou ausente');else if(vis[i.cpf])l.push(i.nome+': CPF repetido no pedido');vis[i.cpf]=1;
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(i.nasc||''))l.push(i.nome+': data de nascimento ausente');if(!(i.valor>0))l.push(i.nome+': valor zerado')});
+  if(!BC.cnpj)l.push('Dados da empresa para o arquivo não configurados (aba Empresa e layout).');return l}
+var nomeCtr=function(id){var c=(window.CT0||[]).find(function(x){return x.id==id});return c?(c.cliente||c.nome||c.id):'Sem posto'};
+var kpi=function(l,v,c,s){return '<div class="k '+(c||'')+'"><span>'+l+'</span><b>'+v+'</b>'+(s?'<small>'+s+'</small>':'')+'</div>'};
+function srvBase(){try{return new URL(((window.CF||{}).nf||{}).url).origin}catch(e){return''}}
+async function srv(body){if(!srvBase())throw new Error('Informe o endereço do servidor em Configurações (é o mesmo servidor das notas fiscais).');var ss=await axisSb.auth.getSession(),r=await fetch(srvBase()+'/beneficios/robo',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+ss.data.session.access_token},body:JSON.stringify(body)});return r.json()}
+var capBtn=function(l){return (l||[]).map(function(c){return '<button class="b2" data-a="ben" data-p="cap:'+E(c)+'">'+E(c.split('/').pop().replace(/^\d+-/,'').slice(0,34))+'</button>'}).join(' ')};
+var fail=function(e){console.error(e);CC.toast('Não foi possível salvar: '+((e&&e.message)||e),'danger')};
+
+/* ---------- Pedidos ---------- */
+function lista(){var h='<div class="row"><button class="b" data-a="ben" data-p="novo">Novo pedido</button></div>';
+  if(S.novo){var hoje=new Date(),m=hoje.getFullYear()+'-'+('0'+(hoje.getMonth()+1)).slice(-2);
+    h+='<div class="fm"><div><label for="bn_comp">Competência (mês dos dias)</label><input id="bn_comp" type="month" value="'+m+'"></div><div><label for="bn_cred">Data do crédito</label><input id="bn_cred" type="date"></div>'+
+    '<div><label for="bn_fer">Feriados nacionais</label><select id="bn_fer"><option value="0">Não descontar</option><option value="1">Descontar (5x2 e 6x1)</option></select></div></div><div class="row"><button class="b" data-a="ben" data-p="calc">Calcular pedido</button><button class="b2" data-a="ben" data-p="cancnovo">Cancelar</button></div>'}
+  if(!BP.length)return h+'<p class="sub">Nenhum pedido ainda. Configure a empresa e as regras e clique em “Novo pedido”.</p>';
+  return h+'<div class="tw"><table><tr><th>Competência</th><th>Crédito</th><th>Funcionários</th><th>Total</th><th>Status</th><th>Arquivo</th></tr>'+BP.slice().sort(function(a,b){return String(b.comp).localeCompare(String(a.comp))||String(b.criadoEm).localeCompare(String(a.criadoEm))}).map(function(p){
+    return '<tr class="r" data-a="ben" data-p="ped:'+p.id+'"><td>'+p.comp.split('-').reverse().join('/')+'</td><td>'+dt(p.cred)+'</td><td>'+p.itens.length+'</td><td>'+$$(p.total)+'</td><td>'+TG(ST[p.status]||[p.status,'mut'])+'</td><td>'+(p.arquivoEm?'gerado':'—')+'</td></tr>'}).join('')+'</table></div>'}
+
+function pedido(){var p=BP.find(function(x){return x.id==S.sel});if(!p)return '<p class="sub">Pedido não encontrado.</p>';
+  var pr=problemas(p),ed=p.status=='rascunho',h='<div class="crumb"><button data-a="ben" data-p="ped">‹ Pedidos</button></div><h2>Pedido VR · '+p.comp.split('-').reverse().join('/')+'</h2>'+
+  '<div class="grid">'+kpi('Status',TG(ST[p.status]||[p.status,'mut']))+kpi('Total do pedido',$$(p.total))+kpi('Funcionários',p.itens.length)+kpi('Crédito',dt(p.cred))+kpi('Aprovado por',p.aprovadoPor?E(p.aprovadoPor):'—','',p.aprovadoEm?dt(p.aprovadoEm):'')+'</div>';
+  if(pr.length)h+='<div class="alerts" style="margin-top:10px"><div class="al bad"><b>Corrigir antes de aprovar ('+pr.length+'):</b><br>'+pr.slice(0,8).map(E).join('<br>')+(pr.length>8?'<br>…e mais '+(pr.length-8):'')+'</div></div>';
+  var ac='';if(p.status=='rascunho')ac='<button class="b" data-a="ben" data-p="aprovar">Aprovar pedido</button><button class="b2" data-a="ben" data-p="recalc">Recalcular</button><button class="b2" data-a="ben" data-p="cancelar">Cancelar pedido</button>';
+  else if(p.status=='aprovado')ac='<button class="b" data-a="ben" data-p="arquivo">Gerar arquivo para o Super Portal VR</button><button class="b2" data-a="ben" data-p="reabrir">Reabrir</button>'+(p.arquivoEm?'<button class="b" data-a="ben" data-p="enviado">Marcar como enviado ao portal</button>':'');
+  else if(p.status=='enviado')ac='<button class="b2" data-a="ben" data-p="arquivo">Baixar o arquivo de novo</button>';
+  if(p.status=='aprovado'&&!(p.robo&&p.robo.enviado))ac+='<button class="b" data-a="ben" data-p="robo">Enviar pelo robô (segundo plano)</button>';
+  if(p.status=='enviado'&&p.robo&&p.robo.enviado)ac+='<button class="b2" data-a="ben" data-p="robobol">Buscar boleto agora</button>';
+  h+='<div class="row">'+ac+'</div>';
+  if(p.robo){var rb=p.robo;h+='<h3>Robô do portal VR</h3><div class="alerts"><div class="al '+(rb.estado=='erro'?'bad':rb.estado=='ok'?'ok':'warn')+'"><b>'+E({fila:'Na fila',executando:'Executando',parado:'Parado no modo teste',aguardando_boleto:'Aguardando o boleto',erro:'Erro',ok:'Concluído'}[rb.estado]||rb.estado)+'</b>: '+E(rb.msg||'')+(rb.numeroPedidoVR?' · Pedido VR nº '+E(rb.numeroPedidoVR):'')+(rb.alerta?'<br><b>'+E(rb.alerta)+'</b>':'')+
+    '</div></div>'+((rb.log||[]).length?'<details><summary>Histórico do robô</summary><div class="sub">'+rb.log.slice(-8).reverse().map(E).join('<br>')+'</div></details>':'')+((rb.capturas||[]).length?'<div class="row">'+capBtn(rb.capturas)+'</div>':'')}
+  if(p.status=='aprovado'&&!p.arquivoEm)h+='<p class="sub">Depois de baixar o arquivo, envie-o em “Pedidos” no Super Portal VR e volte aqui para marcar como enviado.</p>';
+  if(p.status=='enviado'||p.status=='boleto'){h+='<h3>Boleto da VR</h3>';
+    if(p.status=='boleto')h+='<div class="alerts"><div class="al ok">Boleto lançado em Contas a pagar: vencimento '+dt(p.boleto.venc)+', valor '+$$(p.boleto.valor)+(Math.abs(p.boleto.valor-p.total)>0.005?'. <b>Diferente do pedido ('+$$(p.total)+').</b>':'. Confere com o pedido.')+'</div></div>';
+    else h+='<div class="fm"><div><label for="bb_venc">Vencimento</label><input id="bb_venc" type="date"></div><div><label for="bb_val">Valor do boleto (R$)</label><input id="bb_val" type="number" step="0.01" value="'+p.total+'"></div><div style="grid-column:1/-1"><label for="bb_lin">Linha digitável</label><input id="bb_lin"></div><div><label for="bb_pdf">PDF do boleto</label><input id="bb_pdf" type="file" accept="application/pdf"></div></div><div class="row"><button class="b" data-a="ben" data-p="boleto">Lançar em Contas a pagar</button></div>'}
+  var g={};p.itens.forEach(function(i){var k=nomeCtr(i.ctr);g[k]=g[k]||{n:0,v:0};g[k].n++;g[k].v+=i.valor});
+  h+='<h3>Custo por posto</h3><div class="tw"><table><tr><th>Posto</th><th>Funcionários</th><th>Valor</th></tr>'+Object.keys(g).sort().map(function(k){return '<tr><td>'+E(k)+'</td><td>'+g[k].n+'</td><td>'+$$(g[k].v)+'</td></tr>'}).join('')+'</table></div>';
+  h+='<h3>Funcionários</h3><div class="tw"><table><tr><th>Nome</th><th>Posto</th><th>Dias</th><th>Ajuste</th><th>R$/dia</th><th>Valor</th></tr>'+p.itens.map(function(i,ix){
+    return '<tr><td>'+E(i.nome)+'</td><td>'+E(nomeCtr(i.ctr))+'</td><td>'+i.dias+'</td><td>'+(ed?'<input type="number" style="width:70px" data-bx="'+ix+'" value="'+i.ajuste+'" aria-label="Ajuste de dias">':i.ajuste)+'</td><td>'+$$(i.valorDia)+'</td><td>'+$$(i.valor)+'</td></tr>'}).join('')+'</table></div>';
+  return h}
+
+/* ---------- Regras ---------- */
+function regras(){var q=S.q.toLowerCase(),m=new Date(),comp=m.getFullYear()+'-'+('0'+(m.getMonth()+1)).slice(-2);
+  var l=FN0.filter(function(f){return ativoNoMes(f,comp)&&(!q||[f.nome,f.cargo,f.matricula,nomeCtr(f.ctr)].join(' ').toLowerCase().indexOf(q)>=0)}).sort(function(a,b){return a.nome.localeCompare(b.nome)});
+  var sem=l.filter(function(f){return !BEN[f.id]}).length;
+  var h='<p class="sub">Valor por dia e escala de cada funcionário ativo. As alterações salvam ao sair do campo. “Dias fixos” usa a coluna Dias fixos.</p><div class="row"><input id="bn_q" placeholder="Buscar nome, cargo, matrícula, posto…" value="'+E(S.q)+'" style="min-width:260px">'+
+   '<select id="bl_esc">'+ESC.map(function(e){return '<option value="'+e[0]+'">'+e[1]+'</option>'}).join('')+'</select><input id="bl_val" type="number" step="0.01" placeholder="R$/dia" style="width:100px"><button class="b2" data-a="ben" data-p="aplicar">Aplicar a quem está sem regra ('+sem+')</button></div>';
+  return h+'<div class="tw"><table><tr><th>Funcionário</th><th>Posto</th><th>Escala</th><th>Dias fixos</th><th>R$/dia</th><th>Ativo</th></tr>'+l.slice(0,300).map(function(f){var r=BEN[f.id]||{};
+    return '<tr><td>'+E(f.nome)+'<small style="display:block;color:var(--mut)">'+E(f.cargo||'')+'</small></td><td>'+E(nomeCtr(f.ctr))+'</td><td><select data-bf="'+f.id+'" data-bk="escala" aria-label="Escala">'+(r.escala?'':'<option value="">—</option>')+ESC.map(function(e){return '<option value="'+e[0]+'"'+(r.escala==e[0]?' selected':'')+'>'+e[1]+'</option>'}).join('')+'</select></td>'+
+    '<td><input type="number" style="width:70px" data-bf="'+f.id+'" data-bk="diasFixos" value="'+(r.diasFixos||'')+'" aria-label="Dias fixos"></td><td><input type="number" step="0.01" style="width:90px" data-bf="'+f.id+'" data-bk="valorDia" value="'+(r.valorDia||'')+'" aria-label="Valor por dia"></td>'+
+    '<td><input type="checkbox" data-bf="'+f.id+'" data-bk="ativo"'+(r.ativo===false?'':' checked')+' aria-label="Recebe benefício"></td></tr>'}).join('')+'</table></div>'}
+
+/* ---------- Empresa e layout ---------- */
+var CFLD=[['cnpj','CNPJ (só números)'],['razao','Razão social'],['fantasia','Nome fantasia / local de entrega'],['tpLogr','Tipo do logradouro (RUA, AV…)'],['logradouro','Logradouro'],['numero','Número'],['compl','Complemento'],['bairro','Bairro'],['cidade','Cidade'],['uf','UF'],['cep','CEP'],['responsavel','Responsável pelo pedido']];
+function empresa(){return '<p class="sub">Dados que vão no cabeçalho do arquivo. O jeito mais seguro é importar um arquivo que você já enviou à VR: o AXIS lê e preenche tudo (inclusive os códigos do produto).</p>'+
+  '<div class="row"><label for="bc_imp" class="b2" style="cursor:pointer;padding:8px 14px">Importar arquivo-modelo da VR</label><input id="bc_imp" type="file" accept=".txt" style="display:none"></div><div class="fm">'+
+  CFLD.map(function(c){return '<div><label for="bc_'+c[0]+'">'+c[1]+'</label><input id="bc_'+c[0]+'" value="'+E(BC[c[0]]||'')+'"></div>'}).join('')+'</div>'+
+  '<p class="sub">Códigos do arquivo (copiados do modelo): produto '+E(BC.produto||'—')+' · benefício '+E(BC.codBenef||'—')+' · local '+E(BC.codLocal||'—')+'.</p><div class="row"><button class="b" data-a="ben" data-p="salvarcfg">Salvar</button></div>'+robo()}
+function robo(){var c=S.robo,h='<h3>Robô do portal VR</h3><p class="sub">Roda no servidor, em segundo plano. Usuário e senha do portal ficam só nas variáveis do servidor.</p><div class="row"><button class="b2" data-a="ben" data-p="robostatus">Verificar robô</button><button class="b2" data-a="ben" data-p="descobrir">Descobrir telas do portal</button></div>';
+  if(c){var o=function(v,t){return TG([t,v?'ok':'bad'])};h+='<div class="row">'+o(c.playwright,'Navegador')+o(c.credenciais,'Acesso ao portal')+o(c.servicoSupabase,'Chave de serviço')+o(c.roteiroEnvio,'Roteiro de envio')+o(c.roteiroBoleto,'Roteiro do boleto')+TG([c.confirmaFinal?'Envia de verdade':'Modo teste (não confirma)',c.confirmaFinal?'warn':'ok'])+'</div>'}
+  if((BC.roboCapturas||[]).length)h+='<p class="sub">Capturas da última descoberta ('+dt(BC.roboCapturasEm)+'):</p><div class="row">'+capBtn(BC.roboCapturas)+'</div>';return h}
+
+V.ben=function(){if(!PEOK())return '<h2>Benefícios</h2><p class="sub">Seu perfil não tem acesso a este módulo.</p>';
+  var t=S.tab,tabs=[['ped','Pedidos'],['reg','Regras por funcionário'],['emp','Empresa e layout']];
+  var h='<h2>Benefícios · Vale (VR)</h2><p class="sub">Calcula o pedido, gera o arquivo no layout do Super Portal VR e lança o boleto em Contas a pagar. <b>Envio automático:</b> pelo robô do servidor (aba Empresa e layout); sem o robô configurado, baixe o arquivo e registre o envio e o boleto manualmente.</p><div class="row">'+tabs.map(function(x){return '<button class="'+(t==x[0]||(x[0]=='ped'&&t=='det')?'b':'b2')+'" data-a="ben" data-p="'+x[0]+'">'+x[1]+'</button>'}).join('')+'</div>';
+  return h+(t=='ped'?lista():t=='det'?pedido():t=='reg'?regras():empresa())};
+
+/* ---------- Ações ---------- */
+async function salvarPed(p){await db.doc('benped/'+p.id).set(p)}
+async function acao(p){var o=BP.find(function(x){return x.id==S.sel});
+ try{
+  if(p=='ped'||p=='reg'||p=='emp'){S.tab=p;S.novo=false;draw();return}
+  if(p=='novo'){S.novo=true;draw();return}if(p=='cancnovo'){S.novo=false;draw();return}
+  if(p.indexOf('ped:')==0){S.sel=p.slice(4);S.tab='det';draw();return}
+  if(p=='calc'){var comp=val('bn_comp'),cred=val('bn_cred');if(!comp||!cred)return CC.toast('Informe a competência e a data do crédito.','danger');
+    var r=calcular(comp,val('bn_fer')=='1');if(!r.itens.length)return CC.toast('Nenhum funcionário com regra de benefício. Cadastre as regras primeiro.','danger');
+    var id=(crypto.randomUUID?crypto.randomUUID():String(Date.now())),ped={id:id,comp:comp,cred:cred,fer:val('bn_fer')=='1',status:'rascunho',itens:r.itens,total:total(r.itens),criadoEm:new Date().toISOString(),criadoPor:quem()};
+    await salvarPed(ped);S.sel=id;S.tab='det';S.novo=false;CC.toast(r.semRegra?'Pedido calculado. '+r.semRegra+' funcionário(s) ativo(s) sem regra ficaram de fora.':'Pedido calculado.',r.semRegra?'info':'success');return}
+  if(p=='salvarcfg'){var c=Object.assign({},BC);CFLD.forEach(function(x){c[x[0]]=val('bc_'+x[0])});c.cnpj=c.cnpj.replace(/\D/g,'');c.cep=c.cep.replace(/\D/g,'');await db.doc('bencfg/cfg').set(c);CC.toast('Dados salvos.','success');return}
+  if(p=='aplicar'){var esc=val('bl_esc'),v=parseFloat(val('bl_val'));if(!(v>0))return CC.toast('Informe o valor por dia.','danger');var n=0,hoje=new Date(),comp2=hoje.getFullYear()+'-'+('0'+(hoje.getMonth()+1)).slice(-2);
+    for(var i=0;i<FN0.length;i++){var f=FN0[i];if(ativoNoMes(f,comp2)&&!BEN[f.id]){await db.doc('ben/'+f.id).set({escala:esc,valorDia:v,diasFixos:esc=='fixo'?22:'',ativo:true});n++}}CC.toast(n+' regra(s) criada(s).','success');return}
+  if(p=='robostatus'){var j0=await srv({acao:'status'});if(!j0.ok)throw new Error(j0.erro||'Falha');S.robo=j0.robo;draw();return}
+  if(p=='descobrir'){var j1=await srv({acao:'descobrir'});CC.toast(j1.ok?j1.mensagem:(j1.erro||'Falha'),j1.ok?'success':'danger');return}
+  if(p.indexOf('cap:')==0){var su=await axisSb.storage.from('documentos').createSignedUrl(p.slice(4),300);if(su.error)throw su.error;window.open(su.data.signedUrl,'_blank');return}
+  if(!o)return;
+  if(p=='robo'){if(!window.confirm('Enviar o pedido de '+$$(o.total)+' ('+o.itens.length+' funcionários) ao portal da VR pelo robô?\n\nSe o servidor estiver em modo teste, o robô para antes de confirmar.'))return;
+    var j2=await srv({acao:'enviar',pedidoId:o.id});CC.toast(j2.ok?j2.mensagem:(j2.erro||j2.mensagem||'Falha'),j2.ok?'success':'danger');return}
+  if(p=='robobol'){var j3=await srv({acao:'boleto',pedidoId:o.id});CC.toast(j3.ok?j3.mensagem:(j3.erro||j3.mensagem||'Falha'),j3.ok?'success':'danger');return}
+  if(p=='recalc'){var r2=calcular(o.comp,o.fer);o.itens=r2.itens;o.total=total(o.itens);await salvarPed(o);CC.toast('Pedido recalculado (ajustes zerados).','success');return}
+  if(p=='aprovar'){var pr=problemas(o);if(pr.length)return CC.toast('Corrija as pendências antes de aprovar.','danger');o.status='aprovado';o.aprovadoPor=quem();o.aprovadoEm=new Date().toISOString();await salvarPed(o);CC.toast('Pedido aprovado.','success');return}
+  if(p=='reabrir'){o.status='rascunho';o.arquivoEm=null;await salvarPed(o);return}
+  if(p=='cancelar'){o.status='cancelado';await salvarPed(o);S.tab='ped';draw();return}
+  if(p=='arquivo'){var pr2=problemas(o);if(pr2.length)return CC.toast('Há pendências no pedido.','danger');
+    var txt=VRL.gerar(BC,o.itens,o.cred),b=new Blob([txt],{type:'text/plain'}),a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='VR_pedido_'+o.comp+'.txt';document.body.appendChild(a);a.click();setTimeout(function(){URL.revokeObjectURL(a.href);a.remove()},500);
+    if(!o.arquivoEm){o.arquivoEm=new Date().toISOString();await salvarPed(o)}return}
+  if(p=='enviado'){o.status='enviado';o.enviadoEm=new Date().toISOString();await salvarPed(o);CC.toast('Pedido marcado como enviado ao portal.','success');return}
+  if(p=='boleto'){var venc=val('bb_venc'),vl=parseFloat(val('bb_val'));if(!venc||!(vl>0))return CC.toast('Informe vencimento e valor do boleto.','danger');
+    var doc=null,f=$e('bb_pdf');if(f&&f.files[0]){var up=await db.storage.upload(f.files[0],{type:'application/pdf'});doc=up.id}
+    var lin=val('bb_lin'),cp=await db.collection('pagar').add({fornecedor:'VR Benefícios',cat:'Benefícios',comp:o.comp,venc:venc,valor:vl,forma:'Boleto',status:'Em aberto',obs:'Pedido VR '+o.comp.split('-').reverse().join('/')+(lin?' · Linha digitável: '+lin:''),linha:lin,boletoDoc:doc,benPedido:o.id});
+    o.status='boleto';o.boleto={venc:venc,valor:vl,linha:lin,doc:doc,pagarId:cp.id};await salvarPed(o);CC.toast('Boleto lançado em Contas a pagar.','success');return}
+ }catch(e){fail(e)}}
+
+function snap(col,fn){try{db.collection(col).onSnapshot(function(s){fn(s.docs);if(typeof view!='undefined'&&view=='ben')draw()},function(){})}catch(e){}}
+snap('ben',function(d){BEN={};d.forEach(function(x){BEN[x.id]=x.data()})});
+snap('bencfg',function(d){BC={};d.forEach(function(x){if(x.id=='cfg')BC=x.data()})});
+snap('benped',function(d){BP=d.map(function(x){return Object.assign({id:x.id},x.data())})});
+
+var ie=NV.findIndex(function(q){return q[0]=='esoc'});if(ie<0)ie=NV.findIndex(function(q){return q[0]=='fun'});NV.splice(ie+1,0,['ben','Benefícios']);
+document.addEventListener('click',function(e){var b=e.target.closest&&e.target.closest('[data-a="ben"]');if(b)acao(b.dataset.p)});
+document.addEventListener('change',function(e){var t=e.target;
+  if(t.dataset&&t.dataset.bf){var id=t.dataset.bf,r=Object.assign({ativo:true},BEN[id]||{}),k=t.dataset.bk;r[k]=t.type=='checkbox'?t.checked:(k=='valorDia'||k=='diasFixos')?(t.value===''?'':parseFloat(t.value)):t.value;if(!r.escala)r.escala='5x2';db.doc('ben/'+id).set(r).catch(fail)}
+  if(t.dataset&&t.dataset.bx!==undefined){var p=BP.find(function(x){return x.id==S.sel});if(!p||p.status!='rascunho')return;var i=p.itens[+t.dataset.bx];i.ajuste=parseInt(t.value,10)||0;i.valor=Math.round(Math.max(0,i.dias+i.ajuste)*i.valorDia*100)/100;p.total=total(p.itens);salvarPed(p).catch(fail)}
+  if(t.id=='bc_imp'&&t.files[0]){var fr=new FileReader();fr.onload=function(){try{var o=VRL.ler(String(fr.result));if(!o.cfg.cnpj)throw new Error('Arquivo fora do layout.');BC=Object.assign({},BC,o.cfg);db.doc('bencfg/cfg').set(BC).then(function(){CC.toast('Dados importados do arquivo-modelo.','success')},fail)}catch(x){fail(x)}};fr.readAsText(t.files[0],'latin1')}});
+document.addEventListener('input',function(e){if(e.target.id=='bn_q'){S.q=e.target.value;var p=e.target.selectionStart;draw();var n=$e('bn_q');if(n){n.focus();n.setSelectionRange(p,p)}}});
 })();
 </script>
 
