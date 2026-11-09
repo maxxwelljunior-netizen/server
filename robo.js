@@ -50,8 +50,10 @@ module.exports = function (o) {
   const dmy = d => d ? String(d).slice(0, 10).split('-').reverse().join('/') : '';
 
   /* ---------- Supabase (chave de serviço, só aqui no servidor) ---------- */
+  /* chave nova (sb_secret_...) vai só em apikey; chave antiga (service_role, JWT começando com eyJ) vai também em Authorization */
+  const auth = () => { const k = String(E.SUPABASE_SERVICE_KEY || '').trim(), h = { apikey: k }; if (k.startsWith('eyJ')) h.Authorization = 'Bearer ' + k; return h; };
   async function rest(p, opt) {
-    const r = await fetch(E.SUPABASE_URL + p, Object.assign({}, opt, { headers: Object.assign({ apikey: E.SUPABASE_SERVICE_KEY, Authorization: 'Bearer ' + E.SUPABASE_SERVICE_KEY, 'Content-Type': 'application/json', Prefer: 'return=representation' }, opt && opt.headers) }));
+    const r = await fetch(E.SUPABASE_URL + p, Object.assign({}, opt, { headers: Object.assign({ 'Content-Type': 'application/json', Prefer: 'return=representation' }, auth(), opt && opt.headers) }));
     const t = await r.text(); if (!r.ok) throw new Error('Supabase ' + r.status + ': ' + t.slice(0, 200));
     try { return JSON.parse(t); } catch (e) { return t; }
   }
@@ -63,7 +65,7 @@ module.exports = function (o) {
     return dados;
   }
   async function subir(buf, nome, tipo) {
-    const r = await fetch(E.SUPABASE_URL + '/storage/v1/object/documentos/' + nome, { method: 'POST', headers: { apikey: E.SUPABASE_SERVICE_KEY, Authorization: 'Bearer ' + E.SUPABASE_SERVICE_KEY, 'Content-Type': tipo, 'x-upsert': 'true' }, body: buf });
+    const r = await fetch(E.SUPABASE_URL + '/storage/v1/object/documentos/' + nome, { method: 'POST', headers: Object.assign({ 'Content-Type': tipo, 'x-upsert': 'true' }, auth()), body: buf });
     if (!r.ok) throw new Error('Storage ' + r.status);
     return nome;
   }
