@@ -5,7 +5,8 @@
   O ambiente padrão é PRODUÇÃO RESTRITA (teste, sem validade fiscal).
   Só emite de verdade se NFSE_AMBIENTE=producao E NFSE_CONFIRMO_PRODUCAO=SIM.
 
-  Também atende o eSocial (admissão de funcionários — rotas /esocial/admissao e /esocial/consulta); veja esocial.js.
+  Também atende o Radar de licitações (rotas /licitacoes/pesquisa e /licitacoes/orgao — API pública do PNCP, sem chave; veja licitacoes.js)
+  e o eSocial (admissão de funcionários — rotas /esocial/admissao e /esocial/consulta); veja esocial.js.
   O ambiente do eSocial é separado: ESOCIAL_AMBIENTE=producao + ESOCIAL_CONFIRMO_PRODUCAO=SIM para valer de verdade.
 
   Variáveis de ambiente (nunca coloque isto no HTML):
@@ -32,35 +33,21 @@ const dig = (s, n) => String(s == null ? '' : s).replace(/\D/g, '').padStart(n, 
 const b64 = b => Buffer.from(b).toString('base64');
 
 let CRED = null;
-const SEM_CERT = 'Certificado digital não configurado no servidor (CERT_PFX_BASE64 + CERT_PASSWORD).';
 function credencial() {
   if (CRED) return CRED;
-  let key, chain;
   if (E.CERT_KEY_PEM && E.CERT_CHAIN_PEM) {
-    key = E.CERT_KEY_PEM.replace(/\\n/g, '\n'); chain = E.CERT_CHAIN_PEM.replace(/\\n/g, '\n');
+    CRED = { key: E.CERT_KEY_PEM.replace(/\\n/g, '\n'), chain: E.CERT_CHAIN_PEM.replace(/\\n/g, '\n') };
   } else {
-    if (!String(E.CERT_PFX_BASE64 || '').trim()) throw { status: 500, erro: SEM_CERT };
-    try {
-      const forge = require('node-forge'), o = forge.pki.oids;
-      const p12 = forge.pkcs12.pkcs12FromAsn1(forge.asn1.fromDer(forge.util.decode64(String(E.CERT_PFX_BASE64).replace(/\s+/g, ''))), E.CERT_PASSWORD || '');
-      const bag = (t) => (p12.getBags({ bagType: t })[t] || []);
-      const kb = bag(o.pkcs8ShroudedKeyBag)[0] || bag(o.keyBag)[0];
-      const certs = bag(o.certBag).map(b => b.cert);
-      const leaf = certs.find(c => c.publicKey.n.compareTo(kb.key.n) === 0) || certs[0];
-      key = forge.pki.privateKeyToPem(kb.key);
-      chain = [leaf].concat(certs.filter(c => c !== leaf)).map(c => forge.pki.certificateToPem(c)).join('');
-    } catch (e) {
-      console.error('Certificado:', e && e.message);
-      throw { status: 500, erro: 'O certificado está configurado, mas não abriu: confira a senha (CERT_PASSWORD) e se o CERT_PFX_BASE64 foi colado inteiro, sem cortes. Detalhe: ' + (e && e.message || e) };
-    }
+    const forge = require('node-forge'), o = forge.pki.oids;
+    const p12 = forge.pkcs12.pkcs12FromAsn1(forge.asn1.fromDer(forge.util.decode64(E.CERT_PFX_BASE64 || '')), E.CERT_PASSWORD || '');
+    const bag = (t) => (p12.getBags({ bagType: t })[t] || []);
+    const kb = bag(o.pkcs8ShroudedKeyBag)[0] || bag(o.keyBag)[0];
+    const certs = bag(o.certBag).map(b => b.cert);
+    const leaf = certs.find(c => c.publicKey.n.compareTo(kb.key.n) === 0) || certs[0];
+    CRED = { key: forge.pki.privateKeyToPem(kb.key), chain: [leaf].concat(certs.filter(c => c !== leaf)).map(c => forge.pki.certificateToPem(c)).join('') };
   }
-  let info = {};
-  try { const x = new crypto.X509Certificate(chain.match(/-----BEGIN CERTIFICATE-----[^-]+-----END CERTIFICATE-----/)[0]); info = { titular: x.subject.replace(/\n/g, ', '), validoAte: new Date(x.validTo).toISOString().slice(0, 10), vencido: new Date(x.validTo) < new Date() }; } catch (e) {}
-  if (info.vencido) throw { status: 500, erro: 'O certificado digital configurado no servidor está vencido (' + info.validoAte + '). Instale um A1 válido.' };
-  CRED = { key: key, chain: chain, info: info };
   return CRED;
 }
-function certStatus() { try { return Object.assign({ ok: true }, credencial().info); } catch (e) { return { ok: false, erro: e && e.erro || String(e) }; } }
 
 /* DPS do Simples Nacional (ME/EPP), prestador emitindo (tpEmit=1) */
 function montarDPS(d) {
@@ -113,7 +100,7 @@ async function autorizar(req, perfis) {
   if (!u.ok) throw { status: 401, erro: 'Sessão inválida. Entre novamente.' };
   const p = await fetch(E.SUPABASE_URL + '/rest/v1/rpc/axis_perfil', { method: 'POST', headers: Object.assign({ 'Content-Type': 'application/json' }, h), body: '{}' });
   const perfil = String(await p.json().catch(() => '')).toLowerCase();
-  if ((perfis || PERFIS).indexOf(perfil) < 0) throw { status: 403, erro: 'Seu perfil não tem permissão para esta operação.' };
+  if (perfis === 'qualquer' ? (!perfil || perfil === 'null' || perfil === 'undefined') : (perfis || PERFIS).indexOf(perfil) < 0) throw { status: 403, erro: 'Seu perfil não tem permissão para esta operação.' };
 }
 
 function interpretar(r) {
@@ -143,14 +130,6 @@ async function emitir(req, corpo) {
   return { ok: true, ambiente: ambiente, numero: r.numero, chave: r.chave, dps: dps.id };
 }
 
-/* Benefícios (VR): robô do Super Portal — ver robo.js */
-const RB = require('./robo')({ E: E, VRL: require('./vrlayout') });
-async function beneficiosRota(req, url, corpo) {
-  await autorizar(req, PERFIS_RH);
-  if (url === '/beneficios/robo') return RB.rota(JSON.parse(corpo || '{}'));
-  throw { status: 404, erro: 'Rota não encontrada.' };
-}
-
 /* eSocial (admissão de funcionários) — ver esocial.js */
 const ES = require('./esocial')({ E: E, credencial: credencial });
 async function esocialRota(req, url, corpo) {
@@ -162,18 +141,28 @@ async function esocialRota(req, url, corpo) {
   throw { status: 404, erro: 'Rota não encontrada.' };
 }
 
+/* Radar de licitações (PNCP) — ver licitacoes.js */
+const LIC = require('./licitacoes');
+async function licitacoesRota(req, url, corpo) {
+  await autorizar(req, 'qualquer');
+  const d = JSON.parse(corpo || '{}');
+  if (url === '/licitacoes/pesquisa') return LIC.pesquisar(d);
+  if (url === '/licitacoes/orgao') return LIC.orgao(d);
+  throw { status: 404, erro: 'Rota não encontrada.' };
+}
+
 function servidor() {
   return http.createServer((req, res) => {
     const cors = { 'Access-Control-Allow-Origin': E.ALLOWED_ORIGIN || '*', 'Access-Control-Allow-Headers': 'Content-Type, Authorization', 'Access-Control-Allow-Methods': 'POST, GET, OPTIONS' };
     const fim = (s, o) => { res.writeHead(s, Object.assign({ 'Content-Type': 'application/json' }, cors)); res.end(JSON.stringify(o)); };
     if (req.method === 'OPTIONS') return fim(204, {});
-    if (req.method === 'GET') return fim(200, { ok: true, ambiente: PRODUCAO ? 'produção' : 'teste', esocial: ES.ambiente(), certificado: certStatus(), robo: RB.config() });
+    if (req.method === 'GET') return fim(200, { ok: true, ambiente: PRODUCAO ? 'produção' : 'teste', esocial: ES.ambiente() });
     if (req.method !== 'POST') return fim(405, { ok: false, erro: 'Método não permitido.' });
     let t = ''; req.on('data', x => { t += x; if (t.length > 1e5) req.destroy(); });
     const rota = (req.url || '').split('?')[0];
-    req.on('end', () => (rota.indexOf('/beneficios/') === 0 ? beneficiosRota(req, rota, t) : rota.indexOf('/esocial/') === 0 ? esocialRota(req, rota, t) : emitir(req, t)).then(o => fim(200, o)).catch(e => { console.error(e && e.erro || e); fim(e && e.status || 500, { ok: false, ambiente: PRODUCAO ? 'produção' : 'teste', erro: e && e.erro || 'Falha interna ao emitir a nota.' }); }));
+    req.on('end', () => (rota.indexOf('/esocial/') === 0 ? esocialRota(req, rota, t) : rota.indexOf('/licitacoes/') === 0 ? licitacoesRota(req, rota, t) : emitir(req, t)).then(o => fim(200, o)).catch(e => { console.error(e && e.erro || e); fim(e && e.status || 500, { ok: false, ambiente: PRODUCAO ? 'produção' : 'teste', erro: e && e.erro || 'Falha interna ao emitir a nota.' }); }));
   });
 }
 
 module.exports = { montarDPS, assinar, interpretar, ES };
-if (require.main === module) servidor().listen(E.PORT || 3000, () => { console.log('AXIS NFS-e: ambiente ' + (PRODUCAO ? 'PRODUÇÃO' : 'teste (produção restrita)')); RB.iniciar(); });
+if (require.main === module) servidor().listen(E.PORT || 3000, () => console.log('AXIS NFS-e: ambiente ' + (PRODUCAO ? 'PRODUÇÃO' : 'teste (produção restrita)')));
