@@ -1464,11 +1464,11 @@ svg text.cell{fill:#fff;font-size:11px;font-weight:600;pointer-events:none}
 (function(){
   var A=window.AXG,PH=A.PH;
   var RS={q:'',uf:'',cidade:'',grupo:'principais',dias:30},RTab='encontrar',RR=null,RLOAD=false,RTIPO='todos',SHOWD=false;
-  var CK={},CKRUN=false,OR={cnpj:'',data:null,load:false,err:''},PZ={tipo:'imp',base:'',carn:'nao',loc:''},PIA={bid:'',peca:'impugnação',ponto:'',out:''};
+  var CK={},CKRUN=false,OR={cnpj:'',data:null,load:false,err:''},PZ={tipo:'imp',base:'',carn:'nao',loc:''},PIA={bid:'',peca:'impugnação',ponto:'',trecho:'',out:'',load:false};
   var LS=function(k){try{return JSON.parse(localStorage.getItem(k))||[]}catch(e){return[]}},LSS=function(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}};
   var UFS=['AC','AL','AM','AP','BA','CE','DF','ES','GO','MA','MG','MS','MT','PA','PB','PE','PI','PR','RJ','RN','RO','RR','RS','SC','SE','SP','TO'];
   var SV2=function(id,l,o,v){return'<div><label for="'+id+'">'+l+'</label><select id="'+id+'">'+o.map(function(q){return'<option value="'+q[0]+'"'+(String(q[0])==String(v)?' selected':'')+'>'+E(q[1])+'</option>'}).join('')+'</select></div>'};
-  var GRUPOS=[['principais','Pregão e concorrência'],['rapida','Dispensa e inexigibilidade (contratação rápida)'],['pregao','Só pregão'],['concorrencia','Só concorrência'],['dispensa','Só dispensa'],['credenciamento','Credenciamento']];
+  var GRUPOS=[['principais','Pregão e concorrência'],['rapida','Dispensa e inexigibilidade (contratação rápida)'],['pregao','Só pregão'],['concorrencia','Só concorrência'],['dispensa','Só dispensa'],['credenciamento','Credenciamento'],['todas','Todas as modalidades']];
 
   /* ---------- datas e dias úteis ---------- */
   var pd=function(s){var t=String(s).slice(0,10).split('-');return new Date(+t[0],+t[1]-1,+t[2])};
@@ -1502,18 +1502,18 @@ svg text.cell{fill:#fff;font-size:11px;font-weight:600;pointer-events:none}
       '<span>Propostas até <b>'+(it.encerramento?DT(it.encerramento)+(it.horaEncerramento?' '+it.horaEncerramento:''):'—')+'</b></span><span>Valor: <b>'+(it.valor?R(it.valor):'sigiloso / não informado')+'</b></span>'+(it.numero?'<span>Nº '+E(it.numero)+'</span>':'')+'</div>'+
       '<div class="row">'+(naLista?'':'<button class="b" data-a="rquero" data-p="'+E(it.id)+'">Quero</button>')+'<button class="b2" data-a="rdesc" data-p="'+E(it.id)+'">Descartar</button><button class="b2" data-a="rconf" data-p="'+E(it.id)+'">Conferir edital</button><button class="b2" data-a="rrx" data-p="'+E(it.cnpj)+'">Raio-X do órgão</button>'+(it.link?'<a class="b2" href="'+E(it.link)+'" target="_blank" rel="noopener" style="text-decoration:none;display:inline-block">Abrir no PNCP</a>':'')+'</div></div>'}
   function tabEncontrar(){
-    var h='<div class="filt"><div><label for="rq">O que você vende?</label><input id="rq" type="text" value="'+E(RS.q)+'" placeholder="ex.: limpeza hospitalar" style="width:240px"></div>'+
+    var h='<div class="filt"><div><label for="rq">O que você vende?</label><input id="rq" type="text" value="'+E(RS.q)+'" placeholder="ex.: vigilância, segurança patrimonial, portaria" style="width:240px"></div>'+
       '<div><label for="ru">Estado</label><select id="ru" style="width:auto"><option value="">Todo o Brasil</option>'+UFS.map(function(u){return'<option'+(u==RS.uf?' selected':'')+'>'+u+'</option>'}).join('')+'</select></div>'+
       '<div><label for="rcid">Cidade (opcional)</label><input id="rcid" type="text" value="'+E(RS.cidade)+'" style="width:160px"></div>'+
       '<div><label for="rg">Modalidade</label><select id="rg" style="width:auto">'+GRUPOS.map(function(g){return'<option value="'+g[0]+'"'+(g[0]==RS.grupo?' selected':'')+'>'+g[1]+'</option>'}).join('')+'</select></div>'+
-      '<div><label for="rd">Propostas até</label><select id="rd" style="width:auto">'+[15,30,60,90].map(function(v){return'<option value="'+v+'"'+(v==RS.dias?' selected':'')+'>'+v+' dias</option>'}).join('')+'</select></div>'+
-      '<button class="b" data-a="rpesq">Pesquisar editais</button></div><p class="hint">Mostra só os editais com propostas abertas que contêm <b>todas</b> as palavras digitadas. Fonte: PNCP (dados oficiais).</p>';
+      '<div><label for="rd">Propostas até</label><select id="rd" style="width:auto">'+[15,30,60,90,180].map(function(v){return'<option value="'+v+'"'+(v==RS.dias?' selected':'')+'>'+v+' dias</option>'}).join('')+'</select></div>'+
+      '<button class="b" data-a="rpesq">Pesquisar editais</button></div><p class="hint">Mostra os editais com propostas abertas que contêm <b>todas</b> as palavras de um termo. Use <b>vírgula</b> para separar alternativas (ex.: vigilância, portaria). Fonte: PNCP (dados oficiais).</p>';
     if(RLOAD)return h+'<p class="sub">Consultando o PNCP… pode levar até 1 minuto.</p>';
     if(!RR)return h;
     var desc=LS('axis_desc'),todos=RR.itens,vis=todos.filter(function(i){return SHOWD||desc.indexOf(i.id)<0}),ocultos=todos.length-todos.filter(function(i){return desc.indexOf(i.id)<0}).length,
         cs=vis.filter(function(i){return i.tipo=='servico'}).length,cc=vis.filter(function(i){return i.tipo=='compra'}).length,lista=vis.filter(function(i){return RTIPO=='todos'||i.tipo==RTIPO});
     h+=(RR.falhas&&RR.falhas.length?'<div class="alerts"><div class="al warn">O PNCP recusou parte das consultas ('+RR.falhas.map(function(f){return E(f.modalidade)+': '+(f.erro=='limite_excedido'?'limite de consultas atingido':E(f.erro))}).join('; ')+'). O resultado pode estar incompleto: aguarde 1 minuto e pesquise de novo.</div></div>':'')+
-      (RR.parcial&&!(RR.falhas&&RR.falhas.length)?'<div class="alerts"><div class="al warn">Foram analisadas as primeiras páginas do PNCP; pode haver mais editais. Use estado e modalidade para afunilar.</div></div>':'')+
+      (!RR.completo?'<div class="alerts"><div class="al warn">Leitura do PNCP em andamento: '+RR.paginasLidas+' de '+(RR.paginasTotal||'?')+' páginas. <button class="b2" data-a="rpesq">Buscar mais editais</button></div></div>':'')+
       '<h3>'+lista.length+' edital(is) encontrado(s) <small class="sub">· '+RR.analisados+' editais abertos analisados · propostas até '+DT(RR.ate.replace(/^(\d{4})(\d{2})(\d{2})$/,'$1-$2-$3'))+(RR.cache?' · resultado em cache (até 10 min)':'')+'</small></h3>'+
       '<div class="tabs"><button class="tb2'+(RTIPO=='todos'?' on':'')+'" data-a="rtipo" data-p="todos">Tudo ('+vis.length+')</button><button class="tb2'+(RTIPO=='servico'?' on':'')+'" data-a="rtipo" data-p="servico">Serviços ('+cs+')</button><button class="tb2'+(RTIPO=='compra'?' on':'')+'" data-a="rtipo" data-p="compra">Compras ('+cc+')</button></div>';
     if(!lista.length)h+='<p class="sub">Nenhum edital aberto encontrado com essas palavras. Tente menos palavras, outro estado ou mais dias.</p>';
@@ -1580,15 +1580,27 @@ svg text.cell{fill:#fff;font-size:11px;font-weight:600;pointer-events:none}
   function panelIA(){
     var l=BD.slice().sort(function(a,b){return(b.sessao||'')<(a.sessao||'')?-1:1}).slice(0,40);
     return'<div class="fm ia">'+SV2('ia_bid','Licitação',[['','— sem licitação cadastrada —']].concat(l.map(function(b){return[b.id,(b.orgao||'')+' · '+(b.num||'')+' · '+DT(b.sessao)]})),PIA.bid)+SV2('ia_peca','Peça',[['impugnação','Impugnação ao edital'],['recurso administrativo','Razões de recurso'],['contrarrazões','Contrarrazões'],['pedido de esclarecimento','Pedido de esclarecimento']],PIA.peca)+'</div>'+
-      '<div class="fm ia"><div style="grid-column:1/-1"><label for="ia_ponto">O que você quer contestar (fatos e cláusulas)</label><textarea id="ia_ponto" placeholder="ex.: cláusula 8.3 exige atestado de 80% do quantitativo; planilha desclassificada por erro material…">'+E(PIA.ponto)+'</textarea></div></div>'+
-      '<div class="row"><button class="b" data-a="ria">Montar pedido para a IA</button>'+(PIA.out?'<button class="b2" data-a="rcop">Copiar</button>':'')+'</div>'+(PIA.out?'<div class="fm ia"><div style="grid-column:1/-1"><textarea id="ia_out" readonly>'+E(PIA.out)+'</textarea></div></div>':'')+
-      '<p class="hint">Cole o texto na IA que você já usa. Confira todas as citações de lei e jurisprudência antes de protocolar. Pesquisa: <a href="https://pesquisa.apps.tcu.gov.br/" target="_blank" rel="noopener" style="color:var(--gold)">jurisprudência do TCU</a> · <a href="https://scon.stj.jus.br/SCON/" target="_blank" rel="noopener" style="color:var(--gold)">STJ</a>.</p>'}
+      '<div class="fm ia"><div style="grid-column:1/-1"><label for="ia_ponto">O que você quer contestar (fatos e cláusulas)</label><textarea id="ia_ponto" placeholder="ex.: cláusula 8.3 exige atestado de 80% do quantitativo; planilha desclassificada por erro material…">'+E(PIA.ponto)+'</textarea></div>'+
+      '<div style="grid-column:1/-1"><label for="ia_trecho">Trecho do edital ou da decisão (opcional, mas melhora muito a peça)</label><textarea id="ia_trecho">'+E(PIA.trecho)+'</textarea></div></div>'+
+      '<div class="row"><button class="b" data-a="ria"'+(PIA.load?' disabled':'')+'>'+(PIA.load?'Gerando a peça… (até 1 min)':'Gerar peça com IA')+'</button>'+(PIA.out?'<button class="b2" data-a="rcop">Copiar</button><button class="b2" data-a="rdoc">Baixar Word</button><button class="b2" data-a="rpdf">Salvar PDF</button>':'')+'</div>'+
+      (PIA.out?'<div class="fm ia"><div style="grid-column:1/-1"><label for="ia_out">Minuta (editável)</label><textarea id="ia_out" style="min-height:420px">'+E(PIA.out)+'</textarea></div></div>':'')+
+      '<p class="hint">Minuta gerada por IA: revise fatos, artigos e jurisprudência antes de protocolar. Jurisprudência: <a href="https://pesquisa.apps.tcu.gov.br/" target="_blank" rel="noopener" style="color:var(--gold)">TCU</a> · <a href="https://scon.stj.jus.br/SCON/" target="_blank" rel="noopener" style="color:var(--gold)">STJ</a>.</p>'}
   function montarIA(){
     var b=BD.find(function(x){return x.id==PIA.bid})||{},T=PIA.peca,op=opts(),prazo=b.sessao?(T=='impugnação'||T=='pedido de esclarecimento'?'prazo para impugnar/esclarecer: até '+DT(addBiz(b.sessao,-3,op))+' (3 dias úteis antes da sessão, art. 164)':'prazo de recurso: 3 dias úteis contados da intimação ou da ata (art. 165)'):'';
-    PIA.out='Atue como advogado especialista em licitações e contratos administrativos (Lei 14.133/2021). Redija uma minuta de '+T+' para a empresa abaixo.\n\n'+
-      'DADOS DA LICITAÇÃO\n- Órgão: '+(b.orgao||'[órgão]')+'\n- Edital / processo: '+(b.num||'[número]')+'\n- Modalidade: '+(b.mod||'[modalidade]')+'\n- Objeto: '+(b.objeto||'[objeto]')+'\n- Sessão: '+(b.sessao?DT(b.sessao)+(b.hora?' às '+b.hora:''):'[data]')+'\n- Local/portal: '+(b.portal||'[portal]')+(b.link?'\n- Edital: '+b.link:'')+(prazo?'\n- Prazo: '+prazo:'')+
-      '\n\nPONTOS A CONTESTAR\n'+(PIA.ponto||'[descreva aqui as cláusulas e os fatos]')+
-      '\n\nA peça deve conter: endereçamento, síntese dos fatos, fundamentos jurídicos (cite os artigos da Lei 14.133/2021 e, quando houver, a jurisprudência do TCU e do tribunal de contas competente) e pedidos objetivos. Não invente acórdãos, súmulas ou números de processo: se não tiver certeza de uma citação, escreva "[conferir citação]". Linguagem formal e direta.'}
+    return'Redija uma minuta de '+T+' para a empresa abaixo.\n\nDADOS DA LICITAÇÃO\n- Órgão: '+(b.orgao||'[órgão]')+'\n- Edital / processo: '+(b.num||'[número]')+'\n- Modalidade: '+(b.mod||'[modalidade]')+'\n- Objeto: '+(b.objeto||'[objeto]')+'\n- Sessão: '+(b.sessao?DT(b.sessao)+(b.hora?' às '+b.hora:''):'[data]')+'\n- Portal: '+(b.portal||'[portal]')+(b.link?'\n- Edital: '+b.link:'')+(prazo?'\n- Prazo: '+prazo:'')+(b.emp?'\n- Empresa: '+b.emp:'')+
+      '\n\nPONTOS A CONTESTAR\n'+(PIA.ponto||'[não informado]')+(PIA.trecho?'\n\nTRECHO DO EDITAL / DECISÃO\n'+PIA.trecho:'')+
+      '\n\nEstrutura: endereçamento, síntese dos fatos, fundamentos jurídicos e pedidos objetivos.'}
+  async function gerarIA(){
+    if(!base())return CC.toast(SEMSRV,'danger');
+    PIA.bid=($('ia_bid')||{}).value||'';PIA.peca=($('ia_peca')||{}).value||PIA.peca;PIA.ponto=($('ia_ponto')||{}).value||'';PIA.trecho=($('ia_trecho')||{}).value||'';
+    if(!PIA.ponto.trim()&&!PIA.trecho.trim())return CC.toast('Descreva o que contestar ou cole o trecho do edital.','danger');
+    PIA.load=true;draw();
+    try{var j=await post('/licitacoes/ia',{pedido:montarIA()});if(j&&j.ok)PIA.out=j.texto;else CC.toast((j&&j.erro)||'A IA não respondeu.','danger')}
+    catch(e){console.error(e);CC.toast('Falha ao falar com o servidor.','danger')}
+    PIA.load=false;draw()}
+  function baixarDoc(){
+    var t=($('ia_out')||{}).value||PIA.out,h='<html xmlns:w="urn:schemas-microsoft-com:office:word"><head><meta charset="utf-8"><style>body{font-family:"Times New Roman";font-size:12pt;line-height:1.5}p{text-align:justify;margin:0 0 10pt}</style></head><body>'+t.split(/\n{2,}/).map(function(p){return'<p>'+E(p).replace(/\n/g,'<br>')+'</p>'}).join('')+'</body></html>',a=document.createElement('a');
+    a.href=URL.createObjectURL(new Blob(['\ufeff',h],{type:'application/msword'}));a.download='AXIS-'+PIA.peca.replace(/\s+/g,'_')+'-'+fd(new Date())+'.doc';document.body.appendChild(a);a.click();a.remove()}
 
   /* ---------- tela ---------- */
   function radar(){
@@ -1607,13 +1619,15 @@ svg text.cell{fill:#fff;font-size:11px;font-weight:600;pointer-events:none}
     else if(a=='rconf'){var it=RR&&RR.itens.find(function(x){return x.id==p});if(it){CK={org:it.orgao+' · '+(it.numero||''),pub:it.publicacao,ses:it.encerramento||it.abertura,tipo:it.tipo=='compra'?'b8':'s10',val:it.valor||'',item:'',exc:'',atest:'',gp:'',gc:'',pl:''};CKRUN=false;RTab='decidir';draw();window.scrollTo(0,0)}}
     else if(a=='rrx'){RTab='decidir';raiox(p);window.scrollTo(0,0)}
     else if(a=='rchk'){readCK();CKRUN=true;draw()}else if(a=='rclr'){CK={};CKRUN=false;draw()}else if(a=='rorg'){OR.cnpj=($('ro_cnpj')||{}).value||OR.cnpj;raiox()}
-    else if(a=='ria'){PIA.bid=($('ia_bid')||{}).value||'';PIA.peca=($('ia_peca')||{}).value||PIA.peca;PIA.ponto=($('ia_ponto')||{}).value||'';montarIA();draw()}
+    else if(a=='ria')gerarIA();
+    else if(a=='rdoc')baixarDoc();
+    else if(a=='rpdf'){var t2=($('ia_out')||{}).value||PIA.out;CC.pdfHtml('<section class="rp"><div style="white-space:pre-wrap;font:13px/1.6 Georgia,serif">'+E(t2)+'</div></section>','AXIS-'+PIA.peca.replace(/\s+/g,'_'))}
     else if(a=='rcop'){var t=$('ia_out');if(t){t.select();(navigator.clipboard?navigator.clipboard.writeText(t.value):Promise.reject()).then(function(){CC.toast('Pedido copiado.','success')},function(){document.execCommand&&document.execCommand('copy');CC.toast('Texto selecionado: use Ctrl+C para copiar.')})}}});
   document.addEventListener('change',function(e){var i=e.target.id,v=e.target.value;
     if(i=='rq')RS.q=v;else if(i=='ru')RS.uf=v;else if(i=='rcid')RS.cidade=v;else if(i=='rg')RS.grupo=v;else if(i=='rd')RS.dias=+v||30;
     else if(i&&i.indexOf('ck_')==0)readCK();else if(i=='ro_cnpj')OR.cnpj=v;
     else if(i=='pz_tipo'){PZ.tipo=v;draw()}else if(i=='pz_base'){PZ.base=v;draw()}else if(i=='pz_carn'){PZ.carn=v;draw()}else if(i=='pz_loc'){PZ.loc=v;draw()}
-    else if(i=='ia_bid')PIA.bid=v;else if(i=='ia_peca')PIA.peca=v;else if(i=='ia_ponto')PIA.ponto=v},true);
+    else if(i=='ia_bid')PIA.bid=v;else if(i=='ia_peca')PIA.peca=v;else if(i=='ia_ponto')PIA.ponto=v;else if(i=='ia_trecho')PIA.trecho=v;else if(i=='ia_out')PIA.out=v},true);
   document.addEventListener('keydown',function(e){if(e.key=='Enter'&&e.target.id=='rq'){RS.q=e.target.value;pesquisar()}});
 })();
 </script>

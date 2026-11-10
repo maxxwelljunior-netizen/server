@@ -148,6 +148,7 @@ async function licitacoesRota(req, url, corpo) {
   const d = JSON.parse(corpo || '{}');
   if (url === '/licitacoes/pesquisa') return LIC.pesquisar(d);
   if (url === '/licitacoes/orgao') return LIC.orgao(d);
+  if (url === '/licitacoes/ia') return LIC.ia(d);
   throw { status: 404, erro: 'Rota não encontrada.' };
 }
 
@@ -158,7 +159,7 @@ function servidor() {
     if (req.method === 'OPTIONS') return fim(204, {});
     if (req.method === 'GET') return fim(200, { ok: true, ambiente: PRODUCAO ? 'produção' : 'teste', esocial: ES.ambiente() });
     if (req.method !== 'POST') return fim(405, { ok: false, erro: 'Método não permitido.' });
-    let t = ''; req.on('data', x => { t += x; if (t.length > 1e5) req.destroy(); });
+    let t = ''; req.on('data', x => { t += x; if (t.length > 4e5) req.destroy(); });
     const rota = (req.url || '').split('?')[0];
     req.on('end', () => (rota.indexOf('/esocial/') === 0 ? esocialRota(req, rota, t) : rota.indexOf('/licitacoes/') === 0 ? licitacoesRota(req, rota, t) : emitir(req, t)).then(o => fim(200, o)).catch(e => { console.error(e && e.erro || e); fim(e && e.status || 500, { ok: false, ambiente: PRODUCAO ? 'produção' : 'teste', erro: e && e.erro || 'Falha interna ao emitir a nota.' }); }));
   });
