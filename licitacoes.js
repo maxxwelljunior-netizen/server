@@ -68,13 +68,30 @@ function normalizar(c) {
 
 const stem = w => (w.length > 4 ? w.replace(/(es|s)$/, '') : w);
 const bases = new Map();   /* leitura do PNCP guardada por estado + prazo + modalidades */
-const ORCAMENTO = () => (parseInt(process.env.PNCP_ORCAMENTO_S, 10) || 40) * 1000;
+const ORCAMENTO = () => (parseInt(process.env.PNCP_ORCAMENTO_S, 10) || 20) * 1000;
+let TAM = 500;             /* tenta páginas de 500; se o PNCP recusar, cai para 50 e lembra */
+
+/* Tipos de serviço parametrizados. "ruido" = trechos removidos do objeto antes de procurar os termos
+   (evita "vigilância sanitária", "segurança do trabalho", "Portaria nº 123"...). Cada termo é E entre as palavras; termos são OU. */
+const RUIDO_SEG = [
+  /vigilancia\s+(sanitaria|epidemiologica|em\s+saude|de\s+saude|ambiental|alimentar|socioassistencial|nutricional|entomologica|genomica|farmacologica|de\s+zoonoses)/g,
+  /seguranca\s+(do\s+trabalho|no\s+trabalho|e\s+saude|e\s+medicina|alimentar|juridica|viaria|da\s+informacao|de\s+dados|cibernetica|publica|nacional|hidrica|do\s+paciente|energetica)/g,
+  /(cinto|cintos|calcado|calcados|sapato|sapatos|bota|botas|botina|botinas|luva|luvas|oculos|capacete|capacetes|colete|coletes|mascara|mascaras|extintor|extintores|sinalizacao|vidro|vidros|trava|travas|valvula|valvulas)\s+(de\s+)?seguranca/g
+];
+const RUIDO_PORT = [
+  /\bportarias?\s*(n[\s.\u00b0\u00ba\d]|no\s|numero|conjunta|interministerial|gm\b|mec\b|mf\b|mp\b|seges|sgd|\d)/g
+];
+const PRESETS = {
+  seguranca: { rot: 'Segurança', termos: ['vigilancia', 'vigilante', 'seguranca', 'controle de acesso', 'monitoramento eletronico', 'cftv'], ruido: RUIDO_SEG },
+  portaria: { rot: 'Portaria', termos: ['portaria', 'porteiro', 'recepcao', 'recepcionista'], ruido: RUIDO_PORT }
+};
+PRESETS.ambos = { rot: 'Segurança + Portaria', termos: PRESETS.seguranca.termos.concat(PRESETS.portaria.termos), ruido: RUIDO_SEG.concat(RUIDO_PORT) };
 
 async function carregarBase(uf, mods, dias, fim) {
   const chave = [uf, dias, mods.join(',')].join('|');
   let b = bases.get(chave);
-  if (!b || Date.now() - b.t > 15 * 60e3) {
-    b = { t: Date.now(), itens: new Map(), prog: {}, falhas: [] };
+  if (!b || Date.now() - b.ult > 15 * 60e3) {
+    b = { ult: Date.now(), itens: new Map(), prog: {}, falhas: [] };
     mods.forEach(m => { b.prog[m] = { prox: 1, total: null, fim: false }; });
     bases.set(chave, b);
     if (bases.size > 20) bases.delete(bases.keys().next().value);
@@ -84,31 +101,35 @@ async function carregarBase(uf, mods, dias, fim) {
   for (const mod of mods) {
     const pg = b.prog[mod];
     while (!pg.fim) {
-      if (Date.now() - t0 > ORCAMENTO()) return b;           /* continua na próxima chamada */
+      if (Date.now() - t0 > ORCAMENTO()) { b.ult = Date.now(); return b; }   /* o cliente chama de novo e continua */
       try {
-        const p = { dataFinal: fim, codigoModalidadeContratacao: mod, pagina: pg.prox, tamanhoPagina: 50 }; if (uf) p.uf = uf;
+        const p = { dataFinal: fim, codigoModalidadeContratacao: mod, pagina: pg.prox, tamanhoPagina: TAM }; if (uf) p.uf = uf;
         const j = await pncp('/contratacoes/proposta', p), lista = Array.isArray(j.data) ? j.data : [];
         pg.total = j.totalPaginas || pg.total || 1;
         lista.forEach(x => { const n = normalizar(x); b.itens.set(n.id, n); });
         pg.prox++;
-        if (!lista.length || pg.prox > pg.total || pg.prox > 300) pg.fim = true;
+        if (!lista.length || pg.prox > pg.total || pg.prox > 1000) pg.fim = true;
       } catch (e) {
-        b.falhas.push({ modalidade: MODALIDADES[mod], erro: e.falha || 'falha' });
-        if (e.falha === 'limite_excedido') return b;          /* PNCP pediu pausa */
+        const f = e.falha || 'falha';
+        if (f !== 'limite_excedido' && TAM > 50 && pg.prox === 1) { TAM = 50; continue; }   /* recusou a página grande: volta para 50 */
+        b.falhas.push({ modalidade: MODALIDADES[mod], erro: f });
+        if (f === 'limite_excedido') { b.ult = Date.now(); return b; }                      /* PNCP pediu pausa */
         break;
       }
     }
   }
+  b.ult = Date.now();
   return b;
 }
 
 async function pesquisar(q) {
   q = q || {};
-  /* vírgula, ponto e vírgula ou " ou " = alternativas (OU); dentro de cada uma, todas as palavras (E) */
-  const grupos = String(q.q || '').split(/[,;]|\s+ou\s+/i).map(g => norm(g).split(/\s+/).filter(w => w.length > 1).map(stem)).filter(g => g.length);
+  const pre = PRESETS[q.preset];
+  const termos = pre ? pre.termos : String(q.q || '').split(/[,;]|\s+ou\s+/i);   /* vírgula, ";" ou " ou " = alternativas (OU) */
+  const grupos = termos.map(g => norm(g).split(/\s+/).filter(w => w.length > 1).map(stem)).filter(g => g.length);
   const uf = /^[A-Za-z]{2}$/.test(q.uf || '') ? q.uf.toUpperCase() : '';
   const cidade = norm(q.cidade).trim();
-  const dias = Math.min(Math.max(parseInt(q.dias, 10) || 30, 7), 180);
+  const dias = Math.min(Math.max(parseInt(q.dias, 10) || 30, 7), 365);
   const mods = GRUPOS[q.grupo] || GRUPOS.principais;
   const fim = ymd(addDias(new Date(), dias));
 
@@ -118,14 +139,15 @@ async function pesquisar(q) {
     if (uf && n.uf && n.uf.toUpperCase() !== uf) return false;
     if (cidade && norm(n.cidade).indexOf(cidade) < 0) return false;
     if (n.encerramento && n.encerramento < hoje) return false;
-    const t = norm(n.objeto + ' ' + n.unidade);
+    let t = norm(pre ? n.objeto : n.objeto + ' ' + n.unidade);   /* nos tipos prontos, só o objeto (o nome do órgão traz "Segurança Pública" etc.) */
+    if (pre) t = pre.ruido.reduce((s, re) => s.replace(re, ' '), t);
     return !grupos.length || grupos.some(g => g.every(w => t.indexOf(w) >= 0));
   }).sort((a, c) => (a.encerramento || '9999') < (c.encerramento || '9999') ? -1 : 1);
 
   const progs = mods.map(m => b.prog[m]), completo = progs.every(p => p.fim);
   return { ok: true, itens: itens, analisados: b.itens.size, completo: completo, parcial: !completo,
     paginasLidas: progs.reduce((s, p) => s + p.prox - 1, 0), paginasTotal: progs.reduce((s, p) => s + (p.total || 0), 0),
-    falhas: b.falhas, ate: fim, palavras: grupos.reduce((a, g) => a.concat(g), []) };
+    falhas: b.falhas, ate: fim, palavras: grupos.reduce((a, g) => a.concat(g), []), preset: pre ? pre.rot : '' };
 }
 
 /* Raio-X do comprador: contratos publicados pelo órgão (pessoas físicas ficam de fora, por LGPD) */

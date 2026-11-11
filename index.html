@@ -136,19 +136,11 @@ button{cursor:pointer}
     position: fixed;
     inset: 0;
     z-index: 99999;
-
     display: flex;
     align-items: center;
     justify-content: center;
-
-    background:
-        linear-gradient(
-            180deg,
-            rgba(5,7,10,.72),
-            rgba(5,7,10,.88)
-        ),
-        url('data:image/jpeg;base64,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AKVACggKggKhUVFQQFQRUAABAQBFFEAAAAAAABBUUQAABRAFEAAAAAAEAAAAAAAAAAAAAAUAAAAAAAAAAAAAAAEAAAAAAAAFRRQAAAAAABAAAAAAAAAAAAFAAAAAAUQBRAFEAUBAAFUQBRFAAAABRFAAQAAABRUAUQBRAGgHRzAEVRAFEEFEBVEAVWQGhERWqMgNVKhQUSgKlQBaggKgioqAACAqAqCAAAAAACKioAAAAAAAAAAAAAAAAAAAACAAAAAAAAKAAAAAAAAAAAAAAAAAAAIgAAAoAAAAoAoAAAAAAAgAAAAAAAAAAAAAAACgAAAAAAAAAAAKIAoCKogCiKAAAqAKIAogCgAAAAAoDbAAgACgAAAACKAAqAAAACAogACAqAACAqAqAgAAAAAIKgAAAAAAAAAAAAAAAAAAAAAAAAAigAAAgICqIAogCiAAAgqAAAAAKAKAAAAAIgAAAACqqACKAKAAAAAIAAAAAAAAAAAAAAAAAAAAAAAAAAoAAAAAAAgogKoACoAoigAAAAAAAAAAoDbAqAAAACAAKAAAIAICiAKgCgAAgCoAgIKAAAAAIIqAoAAAAAAAAAAAAAAAAAAAAAAAAAAAiCoAAAAAAAoAAAAAAAAAAACgAAAAAAIgKCooAAKAAAACKiAAoAAAAAAAAAAAIAAAAoqAiiAKIAogCiAKgAKigAAACgAAAACKogCgAKgCiAKIAogCiAP/2Q==') center/cover no-repeat;
-
+    background: #05070d;
+    overflow: hidden;
     padding: 20px;
 }
 
@@ -335,6 +327,29 @@ body:not(.axis-authenticated) .app{display:none}
 </head>
 <body>
 <div id="loginScreen" class="axis-login-screen">
+<svg class="axis-login-bg" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+<defs>
+<linearGradient id="lgSky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#04060b"/><stop offset=".55" stop-color="#0b1626"/><stop offset="1" stop-color="#1a2b40"/></linearGradient>
+<linearGradient id="lgGold" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f6e3a1"/><stop offset=".5" stop-color="#c9a24a"/><stop offset="1" stop-color="#8f6b12"/></linearGradient>
+<linearGradient id="lgAFill" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#c9a24a" stop-opacity=".16"/><stop offset="1" stop-color="#c9a24a" stop-opacity="0"/></linearGradient>
+<radialGradient id="lgGlow" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#d4af37" stop-opacity=".42"/><stop offset="1" stop-color="#d4af37" stop-opacity="0"/></radialGradient>
+<linearGradient id="lgFog" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1a2b40" stop-opacity="0"/><stop offset="1" stop-color="#2a4058" stop-opacity=".55"/></linearGradient>
+<filter id="lgBlur" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="14"/></filter>
+<g id="lgA"><path d="M385 850 L800 112 L1215 850" fill="none" stroke="url(#lgGold)" stroke-width="30" stroke-linejoin="miter" stroke-miterlimit="12"/><path d="M528 604 L1072 604" fill="none" stroke="url(#lgGold)" stroke-width="24"/></g>
+</defs>
+<rect width="1600" height="900" fill="url(#lgSky)"/>
+<ellipse cx="800" cy="260" rx="620" ry="420" fill="url(#lgGlow)"/>
+<g><circle class="" cx="673" cy="495" r="1" fill="#fff" opacity="0.8"/><circle class="tw1" cx="108" cy="47" r="1.7" fill="#fff" opacity="0.6"/><circle class="tw2" cx="1203" cy="39" r="1.7" fill="#fff" opacity="0.45"/><circle class="tw1" cx="186" cy="232" r="1.3" fill="#fff" opacity="0.45"/><circle class="tw1" cx="195" cy="292" r="1.3" fill="#fff" opacity="0.8"/><circle class="" cx="263" cy="495" r="1" fill="#fff" opacity="0.8"/><circle class="" cx="1203" cy="495" r="0.8" fill="#fff" opacity="0.8"/><circle class="tw1" cx="822" cy="35" r="1" fill="#fff" opacity="0.8"/><circle class="tw2" cx="282" cy="158" r="1.3" fill="#fff" opacity="0.8"/><circle class="" cx="251" cy="302" r="1" fill="#fff" opacity="0.8"/><circle class="" cx="380" cy="62" r="1.7" fill="#fff" opacity="0.8"/><circle class="" cx="394" cy="200" r="0.8" fill="#fff" opacity="0.8"/><circle class="" cx="138" cy="298" r="0.8" fill="#fff" opacity="0.45"/><circle class="" cx="1026" cy="358" r="1.7" fill="#fff" opacity="0.6"/><circle class="tw3" cx="963" cy="309" r="1.3" fill="#fff" opacity="0.6"/><circle class="" cx="518" cy="416" r="1" fill="#fff" opacity="0.45"/><circle class="" cx="177" cy="304" r="1" fill="#fff" opacity="0.6"/><circle class="tw3" cx="713" cy="383" r="1.3" fill="#fff" opacity="0.8"/><circle class="" cx="159" cy="70" r="1.7" fill="#fff" opacity="0.45"/><circle class="" cx="1560" cy="185" r="1" fill="#fff" opacity="0.6"/><circle class="" cx="90" cy="502" r="0.8" fill="#fff" opacity="0.8"/><circle class="" cx="652" cy="184" r="1" fill="#fff" opacity="0.6"/><circle class="tw1" cx="1197" cy="418" r="1.3" fill="#fff" opacity="0.45"/><circle class="tw1" cx="562" cy="252" r="0.8" fill="#fff" opacity="0.8"/><circle class="" cx="1446" cy="168" r="1.7" fill="#fff" opacity="0.6"/><circle class="" cx="592" cy="376" r="1.3" fill="#fff" opacity="0.6"/><circle class="tw3" cx="56" cy="491" r="1.3" fill="#fff" opacity="0.45"/><circle class="tw1" cx="1261" cy="69" r="1.3" fill="#fff" opacity="0.45"/><circle class="" cx="1583" cy="157" r="1" fill="#fff" opacity="0.45"/><circle class="tw1" cx="824" cy="210" r="1.3" fill="#fff" opacity="0.45"/><circle class="tw3" cx="929" cy="215" r="1.7" fill="#fff" opacity="0.45"/><circle class="tw3" cx="891" cy="452" r="1.7" fill="#fff" opacity="0.8"/><circle class="" cx="860" cy="515" r="1" fill="#fff" opacity="0.6"/><circle class="tw2" cx="482" cy="87" r="0.8" fill="#fff" opacity="0.45"/><circle class="tw1" cx="485" cy="347" r="1" fill="#fff" opacity="0.6"/><circle class="tw3" cx="1216" cy="103" r="1" fill="#fff" opacity="0.45"/><circle class="tw3" cx="308" cy="224" r="1.7" fill="#fff" opacity="0.8"/><circle class="" cx="1169" cy="173" r="1" fill="#fff" opacity="0.8"/><circle class="" cx="1274" cy="345" r="0.8" fill="#fff" opacity="0.8"/><circle class="" cx="1155" cy="210" r="1.3" fill="#fff" opacity="0.6"/><circle class="tw1" cx="222" cy="256" r="1.3" fill="#fff" opacity="0.45"/><circle class="" cx="147" cy="514" r="1" fill="#fff" opacity="0.45"/><circle class="tw1" cx="235" cy="184" r="1.7" fill="#fff" opacity="0.45"/><circle class="" cx="10" cy="300" r="1" fill="#fff" opacity="0.45"/><circle class="tw1" cx="754" cy="324" r="0.8" fill="#fff" opacity="0.45"/><circle class="" cx="1267" cy="202" r="1" fill="#fff" opacity="0.6"/><circle class="" cx="721" cy="318" r="1" fill="#fff" opacity="0.45"/><circle class="" cx="246" cy="444" r="1.3" fill="#fff" opacity="0.6"/><circle class="tw2" cx="1000" cy="169" r="0.8" fill="#fff" opacity="0.45"/><circle class="" cx="1545" cy="185" r="1" fill="#fff" opacity="0.8"/><circle class="tw2" cx="340" cy="274" r="0.8" fill="#fff" opacity="0.8"/><circle class="tw1" cx="750" cy="85" r="1.7" fill="#fff" opacity="0.8"/><circle class="" cx="620" cy="510" r="0.8" fill="#fff" opacity="0.6"/><circle class="tw3" cx="1071" cy="197" r="1" fill="#fff" opacity="0.45"/><circle class="tw3" cx="1100" cy="287" r="1.7" fill="#fff" opacity="0.8"/><circle class="tw2" cx="466" cy="323" r="1" fill="#fff" opacity="0.6"/><circle class="tw2" cx="1525" cy="421" r="1" fill="#fff" opacity="0.8"/><circle class="tw1" cx="1019" cy="192" r="0.8" fill="#fff" opacity="0.6"/><circle class="" cx="977" cy="142" r="1" fill="#fff" opacity="0.8"/><circle class="tw3" cx="715" cy="238" r="1" fill="#fff" opacity="0.45"/><circle class="" cx="461" cy="62" r="1" fill="#fff" opacity="0.45"/><circle class="" cx="701" cy="114" r="1.3" fill="#fff" opacity="0.8"/><circle class="" cx="13" cy="255" r="1" fill="#fff" opacity="0.45"/><circle class="" cx="1362" cy="71" r="1.3" fill="#fff" opacity="0.45"/><circle class="" cx="989" cy="465" r="1" fill="#fff" opacity="0.8"/><circle class="" cx="690" cy="54" r="1.3" fill="#fff" opacity="0.6"/><circle class="" cx="1532" cy="494" r="0.8" fill="#fff" opacity="0.45"/><circle class="tw1" cx="358" cy="518" r="1" fill="#fff" opacity="0.45"/><circle class="" cx="1219" cy="473" r="1.3" fill="#fff" opacity="0.45"/><circle class="" cx="1262" cy="433" r="1.7" fill="#fff" opacity="0.8"/><circle class="" cx="727" cy="89" r="1.7" fill="#fff" opacity="0.45"/><circle class="" cx="53" cy="17" r="0.8" fill="#fff" opacity="0.8"/><circle class="tw2" cx="295" cy="232" r="1" fill="#fff" opacity="0.45"/><circle class="" cx="525" cy="118" r="1" fill="#fff" opacity="0.45"/><circle class="tw3" cx="1574" cy="310" r="1" fill="#fff" opacity="0.8"/><circle class="tw1" cx="868" cy="437" r="1" fill="#fff" opacity="0.8"/><circle class="" cx="734" cy="469" r="1.3" fill="#fff" opacity="0.8"/><circle class="tw2" cx="1068" cy="225" r="1.7" fill="#fff" opacity="0.8"/><circle class="tw1" cx="320" cy="278" r="1.7" fill="#fff" opacity="0.6"/><circle class="tw2" cx="385" cy="321" r="0.8" fill="#fff" opacity="0.45"/><circle class="" cx="299" cy="252" r="1.7" fill="#fff" opacity="0.45"/><circle class="" cx="1149" cy="41" r="1" fill="#fff" opacity="0.8"/><circle class="tw1" cx="1096" cy="294" r="1.3" fill="#fff" opacity="0.8"/><circle class="tw3" cx="126" cy="137" r="1" fill="#fff" opacity="0.45"/><circle class="" cx="210" cy="269" r="1.3" fill="#fff" opacity="0.45"/><circle class="" cx="1566" cy="467" r="0.8" fill="#fff" opacity="0.6"/><circle class="" cx="1264" cy="508" r="1.7" fill="#fff" opacity="0.8"/><circle class="" cx="418" cy="364" r="1" fill="#fff" opacity="0.8"/><circle class="" cx="1102" cy="423" r="1.3" fill="#fff" opacity="0.45"/><circle class="" cx="1441" cy="277" r="1" fill="#fff" opacity="0.45"/></g>
+<path d="M385 850 L800 112 L1215 850 Z" fill="url(#lgAFill)"/>
+<use href="#lgA" filter="url(#lgBlur)" class="aglow" opacity=".75"/>
+<use href="#lgA" opacity=".95"/>
+<circle cx="800" cy="112" r="7" fill="#fff6d0"/>
+<polygon points="0,640 120,560 240,610 380,500 520,600 660,540 800,640 940,560 1080,620 1240,520 1400,610 1500,570 1600,620 1600,900 0,900" fill="#112036"/>
+<polygon points="0,740 160,660 320,720 480,640 640,730 820,690 1000,750 1180,670 1360,740 1480,700 1600,730 1600,900 0,900" fill="#0a1424"/>
+<g class="fog"><ellipse cx="420" cy="760" rx="520" ry="46" fill="url(#lgFog)"/><ellipse cx="1180" cy="790" rx="560" ry="52" fill="url(#lgFog)"/></g>
+<polygon points="0,830 200,780 420,840 640,790 860,850 1080,800 1300,850 1500,810 1600,840 1600,900 0,900" fill="#050a12"/>
+<rect y="760" width="1600" height="140" fill="url(#lgFog)" opacity=".5"/>
+</svg>
 
     <div class="axis-login-card">
 
@@ -1463,7 +1478,7 @@ svg text.cell{fill:#fff;font-size:11px;font-weight:600;pointer-events:none}
 /* ===== AXIS — Radar de licitações: pesquisa no PNCP, conferência do edital (Lei 14.133/2021) e prazos ===== */
 (function(){
   var A=window.AXG,PH=A.PH;
-  var RS={q:'',uf:'',cidade:'',grupo:'principais',dias:30},RTab='encontrar',RR=null,RLOAD=false,RTIPO='todos',SHOWD=false;
+  var RS={q:'',uf:'',cidade:'',grupo:'todas',dias:30,preset:''},RTab='encontrar',RR=null,RLOAD=false,RTIPO='todos',SHOWD=false;
   var CK={},CKRUN=false,OR={cnpj:'',data:null,load:false,err:''},PZ={tipo:'imp',base:'',carn:'nao',loc:''},PIA={bid:'',peca:'impugnação',ponto:'',trecho:'',out:'',load:false};
   var LS=function(k){try{return JSON.parse(localStorage.getItem(k))||[]}catch(e){return[]}},LSS=function(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}};
   var UFS=['AC','AL','AM','AP','BA','CE','DF','ES','GO','MA','MG','MS','MT','PA','PB','PE','PI','PR','RJ','RN','RO','RR','RS','SC','SE','SP','TO'];
@@ -1501,30 +1516,54 @@ svg text.cell{fill:#fff;font-size:11px;font-weight:600;pointer-events:none}
       '<div class="rm"><span>'+TG([it.tipo=='servico'?'Serviço':it.tipo=='compra'?'Compra':'Outro','mut'])+' '+TG([it.modalidade||'—','mut'])+(naLista?' '+TG(['Na sua lista','ok']):'')+'</span><span>⏳ <b>'+falta(it.encerramento)+'</b>'+(d<=3&&d>=0?' · prazo curto':'')+'</span>'+
       '<span>Propostas até <b>'+(it.encerramento?DT(it.encerramento)+(it.horaEncerramento?' '+it.horaEncerramento:''):'—')+'</b></span><span>Valor: <b>'+(it.valor?R(it.valor):'sigiloso / não informado')+'</b></span>'+(it.numero?'<span>Nº '+E(it.numero)+'</span>':'')+'</div>'+
       '<div class="row">'+(naLista?'':'<button class="b" data-a="rquero" data-p="'+E(it.id)+'">Quero</button>')+'<button class="b2" data-a="rdesc" data-p="'+E(it.id)+'">Descartar</button><button class="b2" data-a="rconf" data-p="'+E(it.id)+'">Conferir edital</button><button class="b2" data-a="rrx" data-p="'+E(it.cnpj)+'">Raio-X do órgão</button>'+(it.link?'<a class="b2" href="'+E(it.link)+'" target="_blank" rel="noopener" style="text-decoration:none;display:inline-block">Abrir no PNCP</a>':'')+'</div></div>'}
+  var PRESETS=[['seguranca','🛡️','Segurança','Vigilância, segurança patrimonial e privada, monitoramento e controle de acesso'],['portaria','🚪','Portaria','Portaria, porteiro e recepção'],['ambos','🔎','Segurança + Portaria','Os dois tipos juntos'],['custom','✏️','Outro termo','Digite o que quiser pesquisar']];
+  var RUN=0,sl=function(ms){return new Promise(function(r){setTimeout(r,ms)})};
+  function chips(){return'<div class="chips">'+PRESETS.map(function(p){return'<button class="chip'+(RS.preset==p[0]?' on':'')+'" data-a="rpreset" data-p="'+p[0]+'"><span class="ci">'+p[1]+'</span><b>'+p[2]+'</b><small>'+p[3]+'</small></button>'}).join('')+'</div>'}
+  function auto(){if(RS.preset&&RS.preset!='custom')pesquisar()}
   function tabEncontrar(){
-    var h='<div class="filt"><div><label for="rq">O que você vende?</label><input id="rq" type="text" value="'+E(RS.q)+'" placeholder="ex.: vigilância, segurança patrimonial, portaria" style="width:240px"></div>'+
+    var custom=RS.preset=='custom';
+    var h='<h3 style="margin-top:6px">Que tipo de serviço você quer?</h3>'+chips()+'<div class="filt">'+
+      (custom?'<div><label for="rq">O que você vende?</label><input id="rq" type="text" value="'+E(RS.q)+'" placeholder="ex.: vigilância, portaria" style="width:240px"></div>':'')+
       '<div><label for="ru">Estado</label><select id="ru" style="width:auto"><option value="">Todo o Brasil</option>'+UFS.map(function(u){return'<option'+(u==RS.uf?' selected':'')+'>'+u+'</option>'}).join('')+'</select></div>'+
       '<div><label for="rcid">Cidade (opcional)</label><input id="rcid" type="text" value="'+E(RS.cidade)+'" style="width:160px"></div>'+
       '<div><label for="rg">Modalidade</label><select id="rg" style="width:auto">'+GRUPOS.map(function(g){return'<option value="'+g[0]+'"'+(g[0]==RS.grupo?' selected':'')+'>'+g[1]+'</option>'}).join('')+'</select></div>'+
-      '<div><label for="rd">Propostas até</label><select id="rd" style="width:auto">'+[15,30,60,90,180].map(function(v){return'<option value="'+v+'"'+(v==RS.dias?' selected':'')+'>'+v+' dias</option>'}).join('')+'</select></div>'+
-      '<button class="b" data-a="rpesq">Pesquisar editais</button></div><p class="hint">Mostra os editais com propostas abertas que contêm <b>todas</b> as palavras de um termo. Use <b>vírgula</b> para separar alternativas (ex.: vigilância, portaria). Fonte: PNCP (dados oficiais).</p>';
-    if(RLOAD)return h+'<p class="sub">Consultando o PNCP… pode levar até 1 minuto.</p>';
-    if(!RR)return h;
+      '<div><label for="rd">Propostas até</label><select id="rd" style="width:auto">'+[15,30,60,90,180,365].map(function(v){return'<option value="'+v+'"'+(v==RS.dias?' selected':'')+'>'+v+' dias</option>'}).join('')+'</select></div>'+
+      (custom?'<button class="b" data-a="rpesq">Pesquisar editais</button>':'')+'</div>';
+    if(custom)h+='<p class="hint">Todas as palavras de um termo precisam aparecer no objeto. Use <b>vírgula</b> para separar alternativas (ex.: vigilância, portaria).</p>';
+    else if(RS.preset)h+='<p class="hint">Mostra todos os editais abertos no PNCP cujo objeto trata deste serviço. Ao trocar estado, modalidade ou dias, a pesquisa roda sozinha. Fonte: PNCP (dados oficiais).</p>';
+    if(!RS.preset)return h+'<p class="sub">Clique em uma das opções acima para listar os editais abertos.</p>';
+    if(custom&&!RR&&!RLOAD)return h;
+    if(!RR)return h+'<p class="sub">Consultando o PNCP… os resultados aparecem assim que a primeira leitura terminar.</p>';
     var desc=LS('axis_desc'),todos=RR.itens,vis=todos.filter(function(i){return SHOWD||desc.indexOf(i.id)<0}),ocultos=todos.length-todos.filter(function(i){return desc.indexOf(i.id)<0}).length,
         cs=vis.filter(function(i){return i.tipo=='servico'}).length,cc=vis.filter(function(i){return i.tipo=='compra'}).length,lista=vis.filter(function(i){return RTIPO=='todos'||i.tipo==RTIPO});
-    h+=(RR.falhas&&RR.falhas.length?'<div class="alerts"><div class="al warn">O PNCP recusou parte das consultas ('+RR.falhas.map(function(f){return E(f.modalidade)+': '+(f.erro=='limite_excedido'?'limite de consultas atingido':E(f.erro))}).join('; ')+'). O resultado pode estar incompleto: aguarde 1 minuto e pesquise de novo.</div></div>':'')+
-      (!RR.completo?'<div class="alerts"><div class="al warn">Leitura do PNCP em andamento: '+RR.paginasLidas+' de '+(RR.paginasTotal||'?')+' páginas. <button class="b2" data-a="rpesq">Buscar mais editais</button></div></div>':'')+
-      '<h3>'+lista.length+' edital(is) encontrado(s) <small class="sub">· '+RR.analisados+' editais abertos analisados · propostas até '+DT(RR.ate.replace(/^(\d{4})(\d{2})(\d{2})$/,'$1-$2-$3'))+(RR.cache?' · resultado em cache (até 10 min)':'')+'</small></h3>'+
+    var pgs=RR.paginasLidas+(RR.paginasTotal?' de '+RR.paginasTotal:'')+' páginas';
+    h+=(RLOAD?'<div class="alerts"><div class="al warn">⏳ Lendo o PNCP: '+pgs+' · '+RR.analisados+' editais analisados. A lista abaixo se atualiza sozinha. <button class="b2" data-a="rstop">Parar</button></div></div>':
+        !RR.completo?'<div class="alerts"><div class="al warn">Leitura interrompida em '+pgs+'. <button class="b2" data-a="rpesq">Continuar leitura</button></div></div>':'')+
+      (RR.falhas&&RR.falhas.length?'<div class="alerts"><div class="al warn">O PNCP recusou parte das consultas ('+RR.falhas.map(function(f){return E(f.modalidade)+': '+(f.erro=='limite_excedido'?'limite de consultas atingido, aguardando':E(f.erro))}).join('; ')+').</div></div>':'')+
+      '<h3>'+lista.length+' edital(is) encontrado(s) <small class="sub">· '+RR.analisados+' editais abertos analisados · propostas até '+DT(RR.ate.replace(/^(\d{4})(\d{2})(\d{2})$/,'$1-$2-$3'))+(RR.completo&&!RLOAD?' · leitura completa':'')+'</small></h3>'+
       '<div class="tabs"><button class="tb2'+(RTIPO=='todos'?' on':'')+'" data-a="rtipo" data-p="todos">Tudo ('+vis.length+')</button><button class="tb2'+(RTIPO=='servico'?' on':'')+'" data-a="rtipo" data-p="servico">Serviços ('+cs+')</button><button class="tb2'+(RTIPO=='compra'?' on':'')+'" data-a="rtipo" data-p="compra">Compras ('+cc+')</button></div>';
-    if(!lista.length)h+='<p class="sub">Nenhum edital aberto encontrado com essas palavras. Tente menos palavras, outro estado ou mais dias.</p>';
-    else h+=lista.slice(0,60).map(card).join('')+(lista.length>60?'<p class="sub">Mostrando os 60 que encerram primeiro. Refine a busca para ver os demais.</p>':'');
+    if(!lista.length)h+='<p class="sub">'+(RLOAD?'Nenhum edital encontrado até agora; a leitura continua.':'Nenhum edital aberto encontrado. Tente outro estado, mais dias ou outra modalidade.')+'</p>';
+    else h+=lista.slice(0,200).map(card).join('')+(lista.length>200?'<p class="sub">Mostrando os 200 que encerram primeiro. Refine por estado ou cidade para ver os demais.</p>':'');
     if(ocultos)h+='<p class="sub"><button class="b2" data-a="rrest">'+(SHOWD?'Esconder':'Mostrar')+' descartados ('+ocultos+')</button></p>';
     return h}
   async function pesquisar(){
-    if(!base())return CC.toast(SEMSRV,'danger');if(!RS.q.trim())return CC.toast('Digite o que você vende (uma ou mais palavras).','danger');
-    RLOAD=true;RR=null;draw();
-    try{var j=await post('/licitacoes/pesquisa',RS);if(j&&j.ok)RR=j;else CC.toast((j&&j.erro)||'Não foi possível pesquisar agora.','danger')}catch(e){console.error(e);CC.toast('Falha ao falar com o servidor. Confira o endereço e se ele está no ar.','danger')}
-    RLOAD=false;draw()}
+    if(!base())return CC.toast(SEMSRV,'danger');
+    if(RS.preset=='custom'&&!RS.q.trim())return CC.toast('Digite o que você vende (uma ou mais palavras).','danger');
+    if(!RS.preset)return CC.toast('Escolha o tipo de serviço.','danger');
+    var tok=++RUN,ruins=0;RLOAD=true;RR=null;draw();
+    try{
+      for(var it=0;it<300;it++){
+        var j=await post('/licitacoes/pesquisa',RS);
+        if(tok!=RUN)return;
+        if(!j||!j.ok){CC.toast((j&&j.erro)||'Não foi possível pesquisar agora.','danger');break}
+        RR=j;
+        if(j.completo)break;
+        var lim=(j.falhas||[]).some(function(f){return f.erro=='limite_excedido'});
+        draw();
+        if(lim){await sl(15000)}else if(j.falhas&&j.falhas.length){if(++ruins>=4)break;await sl(3000)}else ruins=0;
+        if(tok!=RUN)return}
+    }catch(e){console.error(e);CC.toast('Falha ao falar com o servidor. Confira o endereço e se ele está no ar.','danger')}
+    if(tok==RUN){RLOAD=false;draw()}}
   function quero(id){
     var it=RR&&RR.itens.find(function(x){return x.id==id});if(!it)return;if(BD.some(function(b){return b.link&&b.link==it.link}))return CC.toast('Este edital já está na sua lista de licitações.');
     var enc=it.encerramento||it.abertura||fd(new Date()),eu=emp||EMPS[0],d={emp:eu,orgao:it.orgao,num:(it.numero||'')+(it.processo?' · proc. '+it.processo:''),mod:modMap(it.modalidade),status:'Analisando',objeto:it.objeto,obs:'Importado do PNCP em '+new Date().toLocaleDateString('pt-BR')+'. Confira prazos e documentos no edital.',cidade:(it.cidade?it.cidade+'/':'')+it.uf,portal:'PNCP',resp:'',link:it.link,valor:it.valor||0,proposta:0,sessao:enc,hora:it.horaEncerramento||'',prazo:enc,impug:addBiz(enc,-3,{carn:'nao',loc:[]})};
@@ -1614,7 +1653,7 @@ svg text.cell{fill:#fff;font-size:11px;font-weight:600;pointer-events:none}
   var il=NV.findIndex(function(q){return q[0]=='lic'});NV.splice(il+1,0,['radar','Radar de licitações']);
 
   document.addEventListener('click',function(e){var b=e.target.closest&&e.target.closest('[data-a]');if(!b)return;var a=b.dataset.a,p=b.dataset.p;
-    if(a=='rdt'){RTab=p;draw()}else if(a=='rpesq')pesquisar();else if(a=='rtipo'){RTIPO=p;draw()}else if(a=='rquero')quero(p);else if(a=='rdesc')descartar(p);
+    if(a=='rdt'){RTab=p;draw()}else if(a=='rpesq')pesquisar();else if(a=='rpreset'){RS.preset=p;if(p=='custom'){RUN++;RLOAD=false;RR=null;draw()}else pesquisar()}else if(a=='rstop'){RUN++;RLOAD=false;draw()}else if(a=='rtipo'){RTIPO=p;draw()}else if(a=='rquero')quero(p);else if(a=='rdesc')descartar(p);
     else if(a=='rrest'){SHOWD=!SHOWD;draw()}
     else if(a=='rconf'){var it=RR&&RR.itens.find(function(x){return x.id==p});if(it){CK={org:it.orgao+' · '+(it.numero||''),pub:it.publicacao,ses:it.encerramento||it.abertura,tipo:it.tipo=='compra'?'b8':'s10',val:it.valor||'',item:'',exc:'',atest:'',gp:'',gc:'',pl:''};CKRUN=false;RTab='decidir';draw();window.scrollTo(0,0)}}
     else if(a=='rrx'){RTab='decidir';raiox(p);window.scrollTo(0,0)}
@@ -1624,7 +1663,7 @@ svg text.cell{fill:#fff;font-size:11px;font-weight:600;pointer-events:none}
     else if(a=='rpdf'){var t2=($('ia_out')||{}).value||PIA.out;CC.pdfHtml('<section class="rp"><div style="white-space:pre-wrap;font:13px/1.6 Georgia,serif">'+E(t2)+'</div></section>','AXIS-'+PIA.peca.replace(/\s+/g,'_'))}
     else if(a=='rcop'){var t=$('ia_out');if(t){t.select();(navigator.clipboard?navigator.clipboard.writeText(t.value):Promise.reject()).then(function(){CC.toast('Pedido copiado.','success')},function(){document.execCommand&&document.execCommand('copy');CC.toast('Texto selecionado: use Ctrl+C para copiar.')})}}});
   document.addEventListener('change',function(e){var i=e.target.id,v=e.target.value;
-    if(i=='rq')RS.q=v;else if(i=='ru')RS.uf=v;else if(i=='rcid')RS.cidade=v;else if(i=='rg')RS.grupo=v;else if(i=='rd')RS.dias=+v||30;
+    if(i=='rq')RS.q=v;else if(i=='ru'){RS.uf=v;auto()}else if(i=='rcid'){RS.cidade=v;auto()}else if(i=='rg'){RS.grupo=v;auto()}else if(i=='rd'){RS.dias=+v||30;auto()}
     else if(i&&i.indexOf('ck_')==0)readCK();else if(i=='ro_cnpj')OR.cnpj=v;
     else if(i=='pz_tipo'){PZ.tipo=v;draw()}else if(i=='pz_base'){PZ.base=v;draw()}else if(i=='pz_carn'){PZ.carn=v;draw()}else if(i=='pz_loc'){PZ.loc=v;draw()}
     else if(i=='ia_bid')PIA.bid=v;else if(i=='ia_peca')PIA.peca=v;else if(i=='ia_ponto')PIA.ponto=v;else if(i=='ia_trecho')PIA.trecho=v;else if(i=='ia_out')PIA.out=v},true);
@@ -1632,5 +1671,243 @@ svg text.cell{fill:#fff;font-size:11px;font-weight:600;pointer-events:none}
 })();
 </script>
 
+<style>
+/* ===== AXIS — menu em módulos: gaveta escondida + telas de módulo ===== */
+body:not(.axis-authenticated) .mtop{display:none}
+.app{grid-template-columns:1fr}
+.mtop{display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:40;color:#e8e9eb;padding:calc(10px + env(safe-area-inset-top,0px)) 18px 10px;border-bottom:1px solid rgba(201,162,74,.28)}
+.mtop b{font-size:16px;font-weight:700;letter-spacing:.6px;cursor:pointer}
+#mmenu{background:none;border:0;color:inherit;font-size:22px;line-height:1;padding:4px 9px;border-radius:6px}
+#mmenu:hover{background:rgba(255,255,255,.10)}
+.mt-loc{font-size:13px;color:#aab2bb;padding-left:12px;border-left:1px solid rgba(255,255,255,.18);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.mt-sp{flex:1}
+.mtop select#emp{width:auto;max-width:210px;background:#1e2125;color:#fff;border:1px solid #454b52;border-radius:6px;padding:6px 8px;font-size:13px}
+aside{position:fixed;top:0;left:0;bottom:0;width:min(86vw,330px);height:100vh;z-index:60;transform:translateX(-100%);transition:transform .22s ease;box-shadow:2px 0 24px rgba(0,0,0,.3);overflow-y:auto;padding-top:calc(18px + env(safe-area-inset-top,0px))}
+body.nav-open aside{transform:translateX(0)}
+body.nav-open .backdrop{display:block;position:fixed;inset:0;z-index:50;background:rgba(0,0,0,.45);border:0;padding:0}
+body.nav-open{overflow:hidden}
+.sel:empty{display:none}
+.who{display:block;margin-top:14px}
+main{margin:0 auto;padding:26px 22px 40px}
+.mi{display:flex;align-items:center;gap:12px;width:100%;background:none;border:0;border-left:3px solid transparent;color:#c5c9ce;padding:8px 10px;border-radius:8px;text-align:left}
+.mi:hover{background:rgba(255,255,255,.06);color:#fff}
+.mi.on{background:rgba(201,162,74,.14);color:#fff;border-left-color:var(--gb);font-weight:600}
+.mi .ico{width:32px;height:32px;display:grid;place-items:center;border-radius:8px;background:rgba(201,162,74,.14);font-size:16px;flex:none}
+.mi.on .ico{background:rgba(201,162,74,.30)}
+.mi::after{content:"›";margin-left:auto;opacity:.4;font-size:18px}
+.mgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(235px,1fr));gap:12px;margin-top:16px}
+.mcard{display:flex;flex-direction:column;align-items:flex-start;gap:6px;text-align:left;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px;min-height:118px;transition:transform .15s,border-color .15s,box-shadow .15s}
+.mcard:hover{transform:translateY(-2px);border-color:var(--gb);box-shadow:0 8px 24px rgba(0,0,0,.10)}
+.mcard b{font-size:15.5px}
+.mcard .d{font-size:12.5px;color:var(--mut);line-height:1.45}
+.mcard .tg{margin-top:auto;padding-top:6px}
+.mcard .ico,.mh .ico{display:grid;place-items:center;width:42px;height:42px;border-radius:10px;background:rgba(201,162,74,.16);font-size:21px;flex:none}
+.mcard.soon b{opacity:.85}
+.mh{display:flex;gap:14px;align-items:center;background:var(--card);border:1px solid var(--line);border-left:4px solid var(--gb);border-radius:12px;padding:16px 18px;margin-top:4px}
+.mh .ico{width:52px;height:52px;font-size:26px}
+@media(max-width:620px){.mt-loc{display:none}}
+</style>
+<script>
+/* ===== AXIS — menu em módulos ===== */
+(function(){
+var MODS=[
+{id:'inteligencia',n:'Inteligência',ic:'📊',d:'KPIs, DRE gerencial, caixa projetado, margem por contrato, exceções e tendências.',it:[
+['Cockpit executivo','Faturamento, custos, margem e pontos de atenção','dash'],
+['Resumo para a diretoria','Lucro do mês, margem por contrato e recebíveis','resumo'],
+['BI','Rentabilidade, dashboards e exportação em PDF','rel'],
+['Alertas','Vencimentos, margens e pendências em um só lugar','al'],
+['Assistente IA','Pergunte aos seus dados em linguagem natural','','Pergunta|Resposta|Data']]},
+{id:'cadastros',n:'Cadastros centrais',ic:'🗂️',d:'Registro único, relacionamentos, documentos, dados fiscais e responsáveis.',it:[
+['Empresas / CNPJs','Empresas do grupo e dados fiscais','','Empresa|CNPJ|Município|Situação'],
+['Filiais','Unidades e estabelecimentos','','Filial|CNPJ|Cidade/UF|Empresa'],
+['Clientes','Cadastro único de clientes','','Cliente|CNPJ/CPF|Contato|Situação'],
+['Fornecedores','Cadastro único de fornecedores','','Fornecedor|CNPJ|Categoria|Situação'],
+['Órgãos','Órgãos públicos compradores','','Órgão|CNPJ|Esfera|UF'],
+['Contatos','Pessoas de contato e relacionamentos','','Nome|Cargo|Telefone|E-mail'],
+['Usuários','Quem acessa o sistema','','Nome|E-mail|Perfil|Situação'],
+['Centros de custo','Estrutura de custos por empresa','','Código|Nome|Empresa|Responsável'],
+['Documentos','Certidões e licenças com controle de validade','doc']]},
+{id:'comercial',n:'Comercial',ic:'🤝',d:'Funil, follow-up, aprovação comercial e conversão para contrato.',it:[
+['CRM','Oportunidades, funil e contratos privados','crm'],
+['Oportunidades','Cadastro e evolução das oportunidades','','Oportunidade|Cliente|Valor mensal|Etapa'],
+['Propostas','Propostas comerciais enviadas','','Nº|Cliente|Valor|Validade|Situação'],
+['Pipeline','Funil por etapa e conversão','','Etapa|Qtde|Valor|Conversão'],
+['Atividades','Follow-ups e próximas ações','','Atividade|Oportunidade|Responsável|Prazo'],
+['Contratos privados','Oportunidades ganhas a caminho do contrato','','Cliente|Segmento|Valor mensal|Etapa']]},
+{id:'licitacoes',n:'Licitações',ic:'📑',d:'Processo licitatório rastreável e conversão de vitória em contrato.',it:[
+['Radar','Encontre editais abertos no PNCP','radar'],
+['Editais','Cadastro e acompanhamento das licitações','lic'],
+['Análise','Conferência do edital · no Radar, aba Decidir','radar'],
+['Agenda','Calendário de sessões e prazos','lic'],
+['Custos','Planilha de custos da proposta','','Licitação|Item|Valor|Observação'],
+['Propostas','Propostas enviadas e resultado','','Licitação|Proposta|Valor|Situação'],
+['Lances','Acompanhamento de disputas','','Licitação|Rodada|Lance|Posição'],
+['Recursos','Impugnações e recursos · no Radar, aba Contestar','radar'],
+['Concorrentes','Histórico de preços e vitórias','','Concorrente|CNPJ|Vitórias|Preço médio']]},
+{id:'contratos',n:'Contratos / AXIS SERVICE',ic:'📝',d:'Gestão de ponta a ponta e rentabilidade por posto/contrato.',it:[
+['Contratos','Cadastro, margem e lançamento mensal','cont'],
+['Versões','Histórico de versões do contrato','','Contrato|Versão|Data|Alteração'],
+['Aditivos','Aditivos e apostilamentos','','Contrato|Aditivo|Tipo|Vigência'],
+['Unidades','Unidades atendidas por contrato','','Unidade|Contrato|Endereço|Supervisor'],
+['Postos','Postos contratados e quantitativos','','Posto|Unidade|Turno|Efetivo'],
+['Escalas','Escalas de trabalho por posto','','Posto|Escala|Colaborador|Período'],
+['Preços','Tabela de preços por posto','','Item|Posto|Valor unitário|Vigência'],
+['Medições','Medição mensal e faturamento','','Competência|Contrato|Valor medido|Situação'],
+['Repactuação','Reajustes e data-base','','Contrato|Data-base|Índice|Reajuste']]},
+{id:'pessoas',n:'Pessoas / DP',ic:'👥',d:'Ciclo de vida do colaborador e custo de mão de obra.',it:[
+['Funcionários','Cadastro, custo mensal e eSocial','fun'],
+['Folha de pagamento','Folha importada e custo por competência','','Competência|Funcionário|Bruto|Descontos|Líquido'],
+['Benefícios','Vale refeição, transporte, cesta e demais benefícios','','Funcionário|Benefício|Valor|Competência'],
+['Admissões','Admissão e envio ao eSocial na ficha do funcionário','fun'],
+['Documentos','Documentação do colaborador','','Funcionário|Documento|Validade|Situação'],
+['Férias','Períodos aquisitivos e programação','','Funcionário|Período aquisitivo|Saldo|Programação'],
+['Afastamentos','Licenças e afastamentos','','Funcionário|Tipo|Início|Retorno'],
+['Ponto','Marcações e horas','','Funcionário|Data|Entrada|Saída|Horas'],
+['Escalas','Escalas por colaborador','','Funcionário|Posto|Escala|Período']]},
+{id:'operacional',n:'Operacional',ic:'🛡️',d:'Execução do serviço, evidências e qualidade.',it:[
+['Postos','Postos e quantidade de colaboradores no mês','op'],
+['Cobertura','Previstos x efetivos por contrato','op'],
+['Ocorrências','Registro e tratamento de ocorrências','','Data|Posto|Tipo|Gravidade|Situação'],
+['Rondas','Rondas e pontos de controle','','Data|Posto|Vigilante|Pontos|Situação'],
+['Inspeções','Inspeções de qualidade nos postos','','Data|Posto|Inspetor|Resultado'],
+['Check-lists','Modelos e execução de check-lists','','Modelo|Posto|Periodicidade|Último'],
+['SLA','Indicadores e metas de serviço','','Contrato|Indicador|Meta|Realizado'],
+['Supervisão','Visitas e pendências da supervisão','','Supervisor|Postos|Visitas|Pendências']]},
+{id:'financeiro',n:'Financeiro',ic:'💰',d:'Fluxo financeiro, baixas, previsões e conciliação.',it:[
+['Contas a receber','Títulos, vencimentos e recebimentos','rec'],
+['Contas a pagar','Fornecedores, vencimentos e pagamentos','pag'],
+['Bancos','Contas bancárias e saldos','','Banco|Agência|Conta|Saldo'],
+['Caixa','Fluxo de caixa realizado e projetado','','Data|Descrição|Entrada|Saída|Saldo'],
+['Conciliação','Extrato x lançamentos','','Data|Lançamento|Extrato|Diferença'],
+['Cobrança','Títulos vencidos e régua de cobrança','','Cliente|Título|Vencimento|Dias em atraso|Ação'],
+['Adiantamentos','Adiantamentos e prestação de contas','','Beneficiário|Motivo|Valor|Situação']]},
+{id:'fiscal',n:'Fiscal / Contábil',ic:'🧾',d:'Documentos fiscais e visão gerencial; obrigações oficiais somente após homologação.',it:[
+['NFS-e','Emissão e registro de notas fiscais','nf'],
+['Notas recebidas','Notas de fornecedores','','Fornecedor|Nº|Emissão|Valor'],
+['Retenções','Retenções na fonte','','Nota|Tributo|Base|Valor retido'],
+['Impostos','Apuração e vencimentos','','Tributo|Competência|Valor|Vencimento'],
+['Lançamentos','Lançamentos contábeis','','Data|Conta|Histórico|Valor'],
+['Plano de contas','Estrutura contábil','','Código|Conta|Natureza|Situação']]},
+{id:'suprimentos',n:'Suprimentos',ic:'📦',d:'Aquisição, movimentação, entrega e custo por contrato.',it:[
+['Requisições','Pedidos internos de compra','','Nº|Solicitante|Item|Situação'],
+['Cotações','Mapa de cotação','','Nº|Item|Fornecedores|Menor preço'],
+['Compras','Pedidos de compra e entregas','','Pedido|Fornecedor|Valor|Entrega'],
+['Fornecedores','Qualificação e avaliação','','Fornecedor|CNPJ|Categoria|Avaliação'],
+['Estoque','Saldo e movimentação','','Item|Local|Qtde|Mínimo'],
+['EPIs','Entrega e validade de EPIs','','Funcionário|EPI|Entrega|Validade'],
+['Uniformes','Entrega de uniformes','','Funcionário|Peça|Tamanho|Entrega'],
+['Patrimônio','Bens e responsáveis','','Bem|Código|Local|Valor']]},
+{id:'juridico',n:'Jurídico / Compliance',ic:'⚖️',d:'Controle documental, prazos e trilha de providências.',it:[
+['Processos','Processos trabalhistas, audiências e pós-audiência','jur'],
+['Prazos','Prazos e providências','','Processo|Providência|Prazo|Responsável'],
+['Notificações','Notificações recebidas e enviadas','','Data|Origem|Assunto|Prazo'],
+['Certidões','Certidões, licenças e documentos com validade','doc'],
+['Procurações','Poderes e validade','','Outorgado|Poderes|Validade|Situação'],
+['Riscos','Matriz de riscos','','Risco|Contrato|Probabilidade|Impacto'],
+['Obrigações','Obrigações contratuais e legais','','Obrigação|Contrato|Vencimento|Responsável']]},
+{id:'administracao',n:'Administração',ic:'⚙️',d:'Governança do ERP e configuração por empresa.',it:[
+['Usuários','Cadastro de usuários do sistema','','Nome|E-mail|Perfil|Situação'],
+['Perfis','Perfis de acesso','','Perfil|Descrição|Usuários'],
+['Permissões','Permissões por módulo','','Perfil|Módulo|Ler|Gravar'],
+['Alçadas','Limites e aprovadores','','Alçada|Valor limite|Aprovador'],
+['Integrações','PNCP, eSocial, banco e outras','','Integração|Situação|Última sincronização'],
+['Auditoria','Trilha de alterações','','Data|Usuário|Ação|Registro'],
+['Parâmetros','Margens, feriados, notas fiscais e empresas','cf'],
+['Logs','Registros técnicos do sistema','','Data|Nível|Origem|Mensagem']]}
+];
+var VMOD={dash:'inteligencia',resumo:'inteligencia',al:'inteligencia',rel:'inteligencia',cont:'contratos',form:'contratos',det:'contratos',lic:'licitacoes',bform:'licitacoes',radar:'licitacoes',crm:'comercial',crmf:'comercial',fun:'pessoas',funf:'pessoas',fund:'pessoas',op:'operacional',rec:'financeiro',recf:'financeiro',pag:'financeiro',pagf:'financeiro',nf:'fiscal',nff:'fiscal',jur:'juridico',jform:'juridico',doc:'cadastros',dform:'cadastros',cf:'administracao'};
+var curMod='',keepSel='';
+var mod=function(id){return MODS.find(function(m){return m.id==id})};
+function modOk(m){
+  if(m.id=='financeiro'||m.id=='fiscal')return !!(window.FOK&&FOK());
+  if(m.id=='pessoas')return !!(window.PEOK&&PEOK());
+  if(m.id=='juridico')return !!(window.JOK&&JOK());
+  return true}
+function modAtual(){
+  if(view=='mod')return sel||'';
+  if(view=='ph')return String(sel||'').split('.')[0];
+  if(view=='home')return '';
+  var m=mod(curMod);
+  if(m&&m.it.some(function(i){return i[2]==view}))return m.id;
+  return VMOD[view]||''}
+
+/* ----- telas ----- */
+V.home=function(){
+  var u=window.AXIS_USER||{},nome=String(u.nome||'').split(' ')[0],vis=MODS.filter(modOk);
+  return'<h2>Olá'+(nome?', '+E(nome):'')+'</h2><p class="sub">Escolha um módulo para começar. O botão ☰ no topo abre a lista de módulos em qualquer tela.</p><div class="mgrid">'+
+    vis.map(function(m){var on=m.it.filter(function(i){return i[2]}).length;
+      return'<button class="mcard" data-a="go" data-p="mod:'+m.id+'"><span class="ico">'+m.ic+'</span><b>'+E(m.n)+'</b><span class="d">'+E(m.d)+'</span><span class="tg"><small class="sub">'+on+' de '+m.it.length+' telas disponíveis</small></span></button>'}).join('')+'</div>'};
+V.mod=function(){
+  var m=mod(sel);if(!m||!modOk(m))return V.home();
+  return'<div class="crumb"><button data-a="go" data-p="home">Início</button> › '+E(m.n)+'</div><div class="mh"><span class="ico">'+m.ic+'</span><div><h2 style="margin:0">'+E(m.n)+'</h2><p class="sub" style="margin:2px 0 0"><b>Entregas:</b> '+E(m.d)+'</p></div></div>'+
+    '<div class="mgrid">'+m.it.map(function(i,k){var real=!!i[2];
+      return'<button class="mcard'+(real?'':' soon')+'" data-a="go" data-mod="'+m.id+'" data-p="'+(real?i[2]:'ph:'+m.id+'.'+k)+'"><b>'+E(i[0])+'</b><span class="d">'+E(i[1]||'')+'</span><span class="tg">'+TG(real?['Disponível','ok']:['Em breve','mut'])+'</span></button>'}).join('')+'</div>'};
+V.ph=function(){
+  var p=String(sel||'').split('.'),m=mod(p[0]),i=m&&m.it[+p[1]];if(!i||!modOk(m))return V.home();
+  var cols=(i[3]||'Nome|Situação|Atualizado em').split('|');
+  return'<div class="crumb"><button data-a="go" data-p="home">Início</button> › <button data-a="go" data-p="mod:'+m.id+'">'+E(m.n)+'</button> › '+E(i[0])+'</div>'+
+    '<h2>'+E(i[0])+' '+TG(['Em breve','mut'])+'</h2><p class="sub">'+E(i[1]||'')+'</p>'+
+    '<div class="alert-strip"><span>🚧 <b>Tela em construção.</b> O layout já está montado; as funções serão liberadas nas próximas versões.</span></div>'+
+    '<div class="grid">'+K('Total','—')+K('Em andamento','—')+K('Pendências','—')+'</div>'+
+    '<div class="row"><button class="b" disabled style="opacity:.5;cursor:not-allowed">+ Novo</button><input disabled placeholder="Buscar…" style="max-width:260px"><select disabled style="width:auto"><option>Todos</option></select></div>'+
+    TB(cols,['<tr><td colspan="'+cols.length+'" class="muted" style="text-align:center;padding:30px 12px">Nenhum registro ainda.</td></tr>'])};
+
+/* ----- gaveta ----- */
+function navHtml(m){
+  if(BOARD())return NVB.map(function(x){return'<button class="mi'+(view==x[0]?' on':'')+'" data-a="go" data-p="'+x[0]+'"><span>'+x[1]+'</span></button>'}).join('');
+  return'<div class="ng">Navegação</div><button class="mi'+(view=='home'?' on':'')+'" data-a="go" data-p="home"><span class="ico">🏠</span><span>Início</span></button><div class="ng">Módulos</div>'+
+    MODS.filter(modOk).map(function(x){return'<button class="mi'+(x.id==m?' on':'')+'" data-a="go" data-p="mod:'+x.id+'"><span class="ico">'+x.ic+'</span><span>'+E(x.n)+'</span></button>'}).join('')}
+function local(m){
+  var mm=mod(m);if(view=='home')return'Início';if(!mm)return '';
+  if(view=='mod')return mm.n;
+  if(view=='ph'){var i=mm.it[+String(sel).split('.')[1]];return mm.n+' › '+(i?i[0]:'')}
+  var it=mm.it.find(function(x){return x[2]==view});return mm.n+(it?' › '+it[0]:'')}
+
+/* ----- desenho (substitui o menu lateral antigo) ----- */
+draw=function(){
+  var board=BOARD();
+  if(board){if(NVB.every(function(x){return x[0]!=view}))view='bhome'}
+  else if(!V[view])view='home';
+  if(view=='mod'||view=='ph'){if(sel)keepSel=sel;else sel=keepSel}
+  var m=board?'':modAtual();if(m)curMod=m;
+  $('nv').innerHTML=navHtml(m);
+  var html=db||!ok?V[view]():'<p class="sub">Não foi possível conectar ao banco de dados. Faça login novamente ou recarregue a página.</p>',mm=mod(m);
+  if(mm&&view!='mod'&&view!='ph'&&view!='home')html=html.replace('<button data-a="go" data-p="dash">Empresa</button>','<button data-a="go" data-p="home">Início</button> › <button data-a="go" data-p="mod:'+mm.id+'">'+E(mm.n)+'</button>');
+  $('mn').innerHTML=html;
+  var l=$('mtLoc');if(l)l.textContent=board?'Painel do conselho':local(m)};
+
+/* ----- barra superior ----- */
+var top=document.querySelector('.mtop');
+if(top){
+  top.insertAdjacentHTML('beforeend','<span class="mt-loc" id="mtLoc"></span><span class="mt-sp"></span>');
+  var br=top.querySelector('b');if(br){br.setAttribute('data-a','go');br.setAttribute('data-p','home')}
+  var ep=$('emp');if(ep)top.appendChild(ep)}
+document.addEventListener('click',function(e){var b=e.target.closest&&e.target.closest('[data-mod]');if(b)curMod=b.dataset.mod},true);
+document.addEventListener('keydown',function(e){if(e.key=='Escape')document.body.classList.remove('nav-open')});
+view='home';draw();
+})();
+</script>
+
+<style>
+/* ===== AXIS — login com montanha e "A" + chips do Radar ===== */
+.axis-login-bg{position:absolute;inset:0;width:100%;height:100%;z-index:0}
+.axis-login-bg .tw1{animation:axtw 3.4s ease-in-out infinite}
+.axis-login-bg .tw2{animation:axtw 4.6s ease-in-out -1.2s infinite}
+.axis-login-bg .tw3{animation:axtw 5.8s ease-in-out -2.4s infinite}
+.axis-login-bg .aglow{animation:axglow 5s ease-in-out infinite}
+.axis-login-bg .fog{animation:axfog 22s ease-in-out infinite alternate}
+@keyframes axtw{0%,100%{opacity:.2}50%{opacity:1}}
+@keyframes axglow{0%,100%{opacity:.5}50%{opacity:.9}}
+@keyframes axfog{from{transform:translateX(-40px)}to{transform:translateX(40px)}}
+.axis-login-card{position:relative;z-index:1;background:linear-gradient(145deg,rgba(17,24,33,.80),rgba(10,15,21,.86));backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border:1px solid rgba(201,162,74,.28);box-shadow:0 30px 80px rgba(0,0,0,.6),0 0 60px rgba(201,162,74,.10)}
+@media (prefers-reduced-motion:reduce){.axis-login-bg *{animation:none!important}}
+.chips{display:grid;grid-template-columns:repeat(auto-fit,minmax(215px,1fr));gap:10px;margin:10px 0 14px}
+.chip{display:flex;flex-direction:column;align-items:flex-start;gap:3px;text-align:left;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px;transition:transform .15s,border-color .15s,box-shadow .15s}
+.chip:hover{transform:translateY(-2px);border-color:var(--gb)}
+.chip.on{border-color:var(--gb);background:rgba(201,162,74,.14);box-shadow:0 0 0 1px var(--gb) inset}
+.chip .ci{font-size:22px;line-height:1}
+.chip b{font-size:15px}
+.chip small{font-size:12px;color:var(--mut);line-height:1.35}
+</style>
 </body>
 </html>
